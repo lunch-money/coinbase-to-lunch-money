@@ -7,9 +7,9 @@ import {
 } from '../src/main.js';
 
 /**
- * Create a mock coinbase client
+ * Placeholder mock coinbase client
  */
-const mockCoinbaseClient = class CoinbaseClient {};
+class MockCoinbaseClient {}
 
 /**
  * Create sample config data
@@ -23,7 +23,7 @@ const createTestCoinbaseConfig = (): LunchMoneyCoinbaseConnectionConfig => ({
  * Create sample context data
  */
 const createTestCoinbaseContext = (): LunchMoneyCoinbaseConnectionContext => ({
-  coinbaseClientConstructor: new mockCoinbaseClient(),
+  coinbaseClientConstructor: new MockCoinbaseClient(),
 });
 
 /**
