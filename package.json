@@ -63,5 +63,8 @@
     "*.{js,ts,tsx}": [
       "eslint --fix"
     ]
+  },
+  "dependencies": {
+    "axios": "^0.21.1"
   }
 }

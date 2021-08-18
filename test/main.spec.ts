@@ -1,15 +1,13 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
+import { CoinbaseClient } from '../src/Coinbase/Client.js';
 import {
   LunchMoneyCoinbaseConnection,
   LunchMoneyCoinbaseConnectionConfig,
   LunchMoneyCoinbaseConnectionContext,
 } from '../src/main.js';
 
-/**
- * Placeholder mock coinbase client
- */
-class MockCoinbaseClient {}
+const sandbox = sinon.createSandbox();
 
 /**
  * Create sample config data
@@ -23,7 +21,7 @@ const createTestCoinbaseConfig = (): LunchMoneyCoinbaseConnectionConfig => ({
  * Create sample context data
  */
 const createTestCoinbaseContext = (): LunchMoneyCoinbaseConnectionContext => ({
-  coinbaseClientConstructor: new MockCoinbaseClient(),
+  coinbaseClientConstructor: sandbox.spy(CoinbaseClient) as typeof CoinbaseClient,
 });
 
 /**

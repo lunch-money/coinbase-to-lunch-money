@@ -1,37 +1,21 @@
-/**
- * Serializable configuration for the connection
- */
-// TODO: Remove this if there isn't any shared config type between our
-// integrations that makes sense here.
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type LunchMoneyCryptoConnectionConfig = {};
+import { CoinbaseClient } from './Coinbase/Client.js';
+import { LunchMoneyCryptoConnectionConfig, LunchMoneyCryptoConnectionContext } from './shared-types.js';
+import { Method } from 'axios';
 
-/**
- * Non-serializable injected dependencies for the connection
- */
-// TODO: Remove this if there isn't any shared context type between our
-// integrations that makes sense here.
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type LunchMoneyCryptoConnectionContext = {};
-
-export interface CryptoBalance {
-  asset: string;
-  amount: string;
+export interface LunchMoneyCoinbaseConnectionConfig extends LunchMoneyCryptoConnectionConfig {
+  apiKey: string;
+  apiSecret: string;
 }
 
-export const providerNames = ['coinbase', 'coinbase_pro', 'kraken', 'coinbase', 'wallet_ethereum'] as const;
-export type ProviderName = typeof providerNames[number];
-export interface LunchMoneyCryptoConnectionBalances {
-  providerName: ProviderName;
-  balances: CryptoBalance[];
+export interface LunchMoneyCoinbaseConnectionContext extends LunchMoneyCryptoConnectionContext {
+  coinbaseClientConstructor: typeof CoinbaseClient;
 }
 
-export type LunchMoneyCryptoConnectionInitialization = LunchMoneyCryptoConnectionBalances;
+export type CoinbaseCredentials = Record<string, string>;
+export type CoinbaseData = Record<string, string> | string;
 
-export interface LunchMoneyCryptoConnection<
-  TConfig extends LunchMoneyCryptoConnectionConfig,
-  TContext extends LunchMoneyCryptoConnectionContext,
-> {
-  initiate(config: TConfig, context: TContext): Promise<LunchMoneyCryptoConnectionInitialization>;
-  getBalances(config: TConfig, context: TContext): Promise<LunchMoneyCryptoConnectionBalances>;
+export interface CoinbaseRequestHandler {
+  send: (method: Method, url: string, data: CoinbaseData) => Promise<CoinbaseResponse>;
 }
+
+export type CoinbaseResponse = Record<string, string>;

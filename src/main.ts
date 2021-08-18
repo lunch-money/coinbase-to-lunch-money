@@ -1,41 +1,39 @@
-// Note that we import the client interface type, not the client constructor.
-import {
-  LunchMoneyCryptoConnection,
-  LunchMoneyCryptoConnectionContext,
-  LunchMoneyCryptoConnectionConfig,
-  CryptoBalance,
-} from './types.js';
+import { LunchMoneyCoinbaseConnectionConfig, LunchMoneyCoinbaseConnectionContext } from './types.js';
+import { LunchMoneyCryptoConnection, LunchMoneyCryptoConnectionBalances } from './shared-types.js';
 
-export { LunchMoneyCryptoConnection } from './types.js';
-
-export interface LunchMoneyCoinbaseConnectionConfig extends LunchMoneyCryptoConnectionConfig {
-  apiKey: string;
-  apiSecret: string;
-}
-
-export interface LunchMoneyCoinbaseConnectionContext extends LunchMoneyCryptoConnectionContext {
-  coinbaseClientConstructor: unknown;
-}
+export * from './types.js';
 
 export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<
   LunchMoneyCoinbaseConnectionConfig,
   LunchMoneyCoinbaseConnectionContext
 > = {
   async initiate(config, context) {
-    config;
-    context;
+    const { coinbaseClientConstructor: CoinbaseClient } = context;
+
+    const coinbase = new CoinbaseClient(config);
+
+    if (!(await coinbase.hasRequiredPermissions())) {
+      throw new Error('Invalid permissions');
+    }
+
+    LunchMoneyCoinbaseConnection.getBalances(config, context);
+
     throw new Error('Method not implemented.');
   },
-  async getBalances(config, context) {
-    config;
-    context;
 
-    const exampleBalance: CryptoBalance = {
-      asset: 'ETH',
-      amount: '3.1415925',
+  async getBalances(config, context) {
+    const { coinbaseClientConstructor: CoinbaseClient } = context;
+
+    const coinbase = new CoinbaseClient(config);
+    const balances = await coinbase.getAllBalances();
+
+    const response: LunchMoneyCryptoConnectionBalances = {
+      providerName: 'coinbase',
+      balances,
     };
 
-    exampleBalance;
+    // @todo - do something with the responses
+    response;
 
     throw new Error('Method not implemented.');
   },
