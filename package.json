@@ -1,0 +1,67 @@
+{
+  "name": "coinbase-to-lunch-money",
+  "packageManager": "yarn@3.0.1",
+  "author": {
+    "name": "Chris Drifte",
+    "email": "chrisdrifte@gmail.com"
+  },
+  "bugs": "https://github.com/lunch-money/coinbase-to-lunch-money/issues",
+  "homepage": "https://github.com/lunch-money/coinbase-to-lunch-money#README",
+  "version": "0.0.1",
+  "license": "MIT",
+  "keywords": [
+    "lunch money",
+    "coinbase",
+    "budgeting"
+  ],
+  "description": "A wrapper around the coinbase API for enabling Lunch Money to gather information about a user's account.",
+  "repository": "github:lunch-money/coinbase-to-lunch-money",
+  "main": "./dist/main.js",
+  "exports": {
+    ".": "./dist/main.js"
+  },
+  "typesVersions": {
+    "*": {
+      "main.d.ts": [
+        "dist/main.d.ts"
+      ]
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "npm run clean && tsc --project tsconfig.build.json",
+    "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
+    "test": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli --recursive --extension ts ",
+    "postinstall": "husky install"
+  },
+  "devDependencies": {
+    "@types/chai": "^4",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.6.1",
+    "@types/rimraf": "^3",
+    "@types/sinon": "^10.0.2",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
+    "chai": "^4.3.4",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^7.0.0",
+    "lint-staged": "^11.1.2",
+    "mocha": "^9.0.3",
+    "prettier": "^2.3.2",
+    "rimraf": "^3.0.2",
+    "sinon": "^11.1.2",
+    "ts-node": "^10.2.0",
+    "typescript": "^4.3.5"
+  },
+  "engines": {
+    "node": "^12.20.0 || ^14.17.1 || >=16.0.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix"
+    ]
+  }
+}
