@@ -3,13 +3,11 @@ import crypto from 'crypto';
 import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from '../../types.js';
 import { URLSearchParams } from 'url';
 
-const BASE_URL = 'https://api.coinbase.com';
-
 /**
  * API key request handler for Coinbase Client
  */
 export class APIKeyRequestHandler implements CoinbaseRequestHandler {
-  constructor(private apiKey: string, private apiSecret: string) {}
+  constructor(public baseUrl: string, private apiKey: string, private apiSecret: string) {}
 
   /**
    * Convert key/value objects to query string
@@ -54,14 +52,13 @@ export class APIKeyRequestHandler implements CoinbaseRequestHandler {
    * Handle a request
    */
   async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseRequestHandlerResponse> {
-    const apiKey = this.apiKey;
-    const apiSecret = this.apiSecret;
+    const { baseUrl, apiKey, apiSecret } = this;
+
+    const url = baseUrl + path;
 
     const timestamp = APIKeyRequestHandler.getTimestamp();
     const message = APIKeyRequestHandler.getMessage(timestamp, method, path, data);
     const signature = APIKeyRequestHandler.getSignature(message, apiSecret);
-
-    const url = BASE_URL + path;
 
     const requestConfig = {
       url,
@@ -80,12 +77,13 @@ export class APIKeyRequestHandler implements CoinbaseRequestHandler {
     try {
       response = await axios(requestConfig);
     } catch (err) {
-      // ignore non-axios errors
+      // re-throw normal errors
       if (!axios.isAxiosError(err)) {
         throw err;
       }
 
-      // passthru axios errors
+      // return axios errors
+      // as endpoints do return content even when triggering status errors
       response = err.response;
     }
 

@@ -1,37 +1,30 @@
 import { CoinbaseClient } from './Coinbase/Client.js';
-import { LunchMoneyCoinbaseConnectionConfig, LunchMoneyCoinbaseConnectionContext } from './types.js';
+import { CoinbaseCredentials } from './types.js';
 import { LunchMoneyCryptoConnection } from './shared-types.js';
 
 export * from './types.js';
 
-// Different contexts can be provided for testing purposes
-const defaultContext = {
-  coinbaseClientConstructor: CoinbaseClient,
-};
+// Create default coinbase client
+const defaultCoinbaseClient = new CoinbaseClient('https://api.coinbase.com', ['wallet:accounts:read']);
 
 /**
  * Lunch Money Coinbase Connection
  */
-export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<
-  LunchMoneyCoinbaseConnectionConfig,
-  LunchMoneyCoinbaseConnectionContext
-> = {
+export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<CoinbaseCredentials, CoinbaseClient> = {
   /**
    * Initiate a connection to a user's coinbase account.
    *
    * - Check that we have correct permissions
    * - Return all balances
    */
-  async initiate(config, context = defaultContext) {
-    const { coinbaseClientConstructor: CoinbaseClient } = context;
-
-    const coinbase = new CoinbaseClient(config, ['wallet:accounts:read']);
+  async initiate(credentials, coinbase = defaultCoinbaseClient) {
+    coinbase.setCredentials(credentials);
 
     if (!(await coinbase.hasRequiredPermissions())) {
       throw new Error('Invalid permissions');
     }
 
-    return LunchMoneyCoinbaseConnection.getBalances(config, context);
+    return LunchMoneyCoinbaseConnection.getBalances(credentials, coinbase);
   },
 
   /**
@@ -39,10 +32,9 @@ export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<
    *
    * - Return all balances
    */
-  async getBalances(config, context = defaultContext) {
-    const { coinbaseClientConstructor: CoinbaseClient } = context;
+  async getBalances(credentials, coinbase = defaultCoinbaseClient) {
+    coinbase.setCredentials(credentials);
 
-    const coinbase = new CoinbaseClient(config, ['wallet:accounts:read']);
     const balances = await coinbase.getAllBalances();
 
     return {

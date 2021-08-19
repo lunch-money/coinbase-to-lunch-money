@@ -5,7 +5,7 @@ import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } 
  * OAuth2 request handler for Coinbase Client
  */
 export class OAuth2RequestHandler implements CoinbaseRequestHandler {
-  constructor(private accessToken: string, private refreshToken: string) {}
+  constructor(public baseUrl: string, private accessToken: string, private refreshToken: string) {}
 
   async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseRequestHandlerResponse> {
     this.accessToken;

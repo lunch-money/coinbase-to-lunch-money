@@ -1,19 +1,14 @@
 import { AxiosError, AxiosResponse, Method } from 'axios';
-import { CoinbaseClient } from './Coinbase/Client.js';
-import { LunchMoneyCryptoConnectionConfig, LunchMoneyCryptoConnectionContext } from './shared-types.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export interface LunchMoneyCoinbaseConnectionConfig extends LunchMoneyCryptoConnectionConfig {
-  apiKey: string;
-  apiSecret: string;
+export interface CoinbaseCredentials {
+  apiKey?: string;
+  apiSecret?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
-export interface LunchMoneyCoinbaseConnectionContext extends LunchMoneyCryptoConnectionContext {
-  coinbaseClientConstructor: typeof CoinbaseClient;
-}
-
-export type CoinbaseCredentials = Record<string, string>;
 export type CoinbaseData = Record<string, string> | string;
 
 export interface CoinbaseRequestHandler {

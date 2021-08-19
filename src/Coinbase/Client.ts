@@ -15,30 +15,12 @@ import { OAuth2RequestHandler } from './RequestHandlers/OAuth2.js';
  */
 export class CoinbaseClient {
   // the request handler for the client to use
-  _requestHandler: CoinbaseRequestHandler;
+  _requestHandler?: CoinbaseRequestHandler;
 
   /**
-   * Create the client instance, using either the APIKey or OAuth2 request handler
-   * depending on the credentials given.
+   * Create the client instance with baseUrl and scopes
    */
-  constructor(credentials: CoinbaseCredentials, public requiredScopes: string[]) {
-    // Use api key handler if given api keys
-    if (credentials.apiKey && credentials.apiSecret) {
-      const { apiKey, apiSecret } = credentials;
-      this._requestHandler = new APIKeyRequestHandler(apiKey, apiSecret);
-      return;
-    }
-
-    // Use oath2 handler if given oauth2 tokens
-    if (credentials.accessToken && credentials.refreshToken) {
-      const { accessToken, refreshToken } = credentials;
-      this._requestHandler = new OAuth2RequestHandler(accessToken, refreshToken);
-      return;
-    }
-
-    // Fail if no valid credentials detected
-    throw new TypeError(`Invalid credentials passed to coinbase client`);
-  }
+  constructor(public baseUrl: string, public requiredScopes: string[]) {}
 
   /**
    * Returns true if scopes match. Otherwise throws errors.
@@ -63,9 +45,35 @@ export class CoinbaseClient {
   }
 
   /**
-   * Route request to request handler and handle the response
+   * Set client credentials
+   */
+  setCredentials(credentials: CoinbaseCredentials): void {
+    // Use api key handler if given api keys
+    if (credentials.apiKey && credentials.apiSecret) {
+      const { apiKey, apiSecret } = credentials;
+      this._requestHandler = new APIKeyRequestHandler(this.baseUrl, apiKey, apiSecret);
+      return;
+    }
+
+    // Use oath2 handler if given oauth2 tokens
+    if (credentials.accessToken && credentials.refreshToken) {
+      const { accessToken, refreshToken } = credentials;
+      this._requestHandler = new OAuth2RequestHandler(this.baseUrl, accessToken, refreshToken);
+      return;
+    }
+
+    throw new TypeError(`Invalid credentials`);
+  }
+
+  /**
+   * Execute a request and handle the response
    */
   async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseResult> {
+    // Route to request handler
+    if (typeof this._requestHandler === 'undefined') {
+      throw new Error('Cannot call request() without request handler');
+    }
+
     const response = await this._requestHandler.request(method, path, data);
 
     // Process response
@@ -86,7 +94,7 @@ export class CoinbaseClient {
         console.error(result.errors);
       }
 
-      throw new Error(`Coinbase API responded with status ${response.status}`);
+      throw new Error(`${method} ${this.baseUrl}${path} responded with status ${response.status}`);
     }
 
     // Help devs notice warnings
