@@ -42,15 +42,15 @@ const testCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' }
 const testBaseUrl = 'https://example.com';
 const testScopes = ['test:scope'];
 
-const testClient = new CoinbaseClient(testBaseUrl, testScopes);
-
-// handle stubs
-let testClientStub: sinon.SinonStubbedInstance<typeof testClient>;
-
 const testConnectionBalances: LunchMoneyCryptoConnectionBalances = {
   providerName: 'coinbase',
   balances: [],
 };
+
+const testClient = new CoinbaseClient(testBaseUrl, testScopes);
+
+// handle stubs
+let testClientStub: sinon.SinonStubbedInstance<typeof testClient>;
 
 beforeEach(() => {
   testClientStub = sinon.stub(testClient);
