@@ -37,6 +37,6 @@ export interface LunchMoneyCryptoConnection<
   TConfig extends LunchMoneyCryptoConnectionConfig,
   TContext extends LunchMoneyCryptoConnectionContext,
 > {
-  initiate(config: TConfig, context: TContext): Promise<LunchMoneyCryptoConnectionInitialization>;
-  getBalances(config: TConfig, context: TContext): Promise<LunchMoneyCryptoConnectionBalances>;
+  initiate(config: TConfig, context?: TContext): Promise<LunchMoneyCryptoConnectionInitialization>;
+  getBalances(config: TConfig, context?: TContext): Promise<LunchMoneyCryptoConnectionBalances>;
 }

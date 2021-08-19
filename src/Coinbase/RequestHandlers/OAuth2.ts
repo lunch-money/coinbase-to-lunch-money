@@ -1,14 +1,17 @@
 import axios, { Method } from 'axios';
-import { CoinbaseData, CoinbaseRequestHandler, CoinbaseResponse } from '../../types.js';
+import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from '../../types.js';
 
+/**
+ * OAuth2 request handler for Coinbase Client
+ */
 export class OAuth2RequestHandler implements CoinbaseRequestHandler {
   constructor(private accessToken: string, private refreshToken: string) {}
 
-  async send(method: Method, url: string, data: CoinbaseData): Promise<CoinbaseResponse> {
+  async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseRequestHandlerResponse> {
     this.accessToken;
     this.refreshToken;
     method;
-    url;
+    path;
     data;
     axios;
     throw new Error('Method not implemented.');

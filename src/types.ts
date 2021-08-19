@@ -1,6 +1,8 @@
+import { AxiosError, AxiosResponse, Method } from 'axios';
 import { CoinbaseClient } from './Coinbase/Client.js';
 import { LunchMoneyCryptoConnectionConfig, LunchMoneyCryptoConnectionContext } from './shared-types.js';
-import { Method } from 'axios';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export interface LunchMoneyCoinbaseConnectionConfig extends LunchMoneyCryptoConnectionConfig {
   apiKey: string;
@@ -15,7 +17,21 @@ export type CoinbaseCredentials = Record<string, string>;
 export type CoinbaseData = Record<string, string> | string;
 
 export interface CoinbaseRequestHandler {
-  send: (method: Method, url: string, data: CoinbaseData) => Promise<CoinbaseResponse>;
+  request: (method: Method, path: string, data?: CoinbaseData) => Promise<CoinbaseRequestHandlerResponse>;
 }
 
-export type CoinbaseResponse = Record<string, string>;
+export type CoinbaseRequestHandlerResponse = AxiosResponse | AxiosError['response'];
+
+export type CoinbaseResult = {
+  pagination?: {
+    ending_before: string | null;
+    starting_after: string | null;
+    limit: number;
+    order: 'asc' | 'desc';
+    previous_uri: string | null;
+    next_uri: string | null;
+  };
+  data?: Record<string, any>;
+  errors?: { id: string; message: string }[];
+  warnings?: { id: string; message: string; url?: string }[];
+};

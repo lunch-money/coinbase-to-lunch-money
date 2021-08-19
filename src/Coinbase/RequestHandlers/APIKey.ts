@@ -1,8 +1,13 @@
 import axios, { Method } from 'axios';
 import crypto from 'crypto';
-import { CoinbaseData, CoinbaseRequestHandler, CoinbaseResponse } from '../../types.js';
+import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from '../../types.js';
 import { URLSearchParams } from 'url';
 
+const BASE_URL = 'https://api.coinbase.com';
+
+/**
+ * API key request handler for Coinbase Client
+ */
 export class APIKeyRequestHandler implements CoinbaseRequestHandler {
   constructor(private apiKey: string, private apiSecret: string) {}
 
@@ -45,15 +50,20 @@ export class APIKeyRequestHandler implements CoinbaseRequestHandler {
     return crypto.createHmac('sha256', apiSecret).update(message).digest('hex');
   }
 
-  async send(method: Method, url: string, data: CoinbaseData): Promise<CoinbaseResponse> {
+  /**
+   * Handle a request
+   */
+  async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseRequestHandlerResponse> {
     const apiKey = this.apiKey;
     const apiSecret = this.apiSecret;
 
     const timestamp = APIKeyRequestHandler.getTimestamp();
-    const message = APIKeyRequestHandler.getMessage(timestamp, method, url, data);
+    const message = APIKeyRequestHandler.getMessage(timestamp, method, path, data);
     const signature = APIKeyRequestHandler.getSignature(message, apiSecret);
 
-    const response = await axios.request({
+    const url = BASE_URL + path;
+
+    const requestConfig = {
       url,
       method,
       data,
@@ -63,16 +73,22 @@ export class APIKeyRequestHandler implements CoinbaseRequestHandler {
         'CB-ACCESS-KEY': apiKey,
         'CB-VERSION': '2015-07-22',
       },
-    });
+    };
 
-    if (response.status !== 200) {
-      throw new Error(`Coinbase API responded with status ${response.status}`);
+    // Make the request
+    let response;
+    try {
+      response = await axios(requestConfig);
+    } catch (err) {
+      // ignore non-axios errors
+      if (!axios.isAxiosError(err)) {
+        throw err;
+      }
+
+      // passthru axios errors
+      response = err.response;
     }
 
-    if (typeof response.data === 'undefined') {
-      throw new Error(`Coinbase API responded with no data`);
-    }
-
-    return response.data;
+    return response;
   }
 }
