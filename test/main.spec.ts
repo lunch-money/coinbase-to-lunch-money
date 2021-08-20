@@ -10,7 +10,6 @@ import { LunchMoneyCryptoConnectionBalances } from './shared-types.js';
 
 // sample data
 const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
-const testBaseUrl = 'https://example.com';
 const testScopes = ['test:scope'];
 
 const testConnectionBalances: LunchMoneyCryptoConnectionBalances = {
@@ -18,7 +17,7 @@ const testConnectionBalances: LunchMoneyCryptoConnectionBalances = {
   balances: [],
 };
 
-const testClient = new CoinbaseClient(testBaseUrl, testScopes);
+const testClient = new CoinbaseClient(testScopes);
 
 // handle stubs
 let testClientStub: sinon.SinonStubbedInstance<typeof testClient>;

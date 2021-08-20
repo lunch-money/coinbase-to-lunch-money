@@ -2,6 +2,9 @@ import { APIKeyRequestHandler } from './RequestHandlers/APIKey.js';
 import { CoinbaseCredentials, CoinbaseData, CoinbaseRequestHandler, CoinbaseResult } from '../types.js';
 import { CryptoBalance } from '../shared-types.js';
 import { Method } from 'axios';
+import { URL } from 'url';
+
+const BASE_URL = 'https://api.coinbase.com';
 
 /**
  * Coinbase Client
@@ -19,7 +22,7 @@ export class CoinbaseClient {
   /**
    * Create the client instance with baseUrl and scopes
    */
-  constructor(public baseUrl: string, public requiredScopes: string[]) {}
+  constructor(public requiredScopes: string[]) {}
 
   /**
    * Returns true if scopes match. Otherwise throws errors.
@@ -50,7 +53,7 @@ export class CoinbaseClient {
     // Use api key handler if given api keys
     if (credentials.apiKey && credentials.apiSecret) {
       const { apiKey, apiSecret } = credentials;
-      this._requestHandler = new APIKeyRequestHandler(this.baseUrl, apiKey, apiSecret);
+      this._requestHandler = new APIKeyRequestHandler(apiKey, apiSecret);
       return;
     }
 
@@ -61,12 +64,14 @@ export class CoinbaseClient {
    * Execute a request and handle the response
    */
   async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseResult> {
+    const url = new URL(path, BASE_URL).href;
+
     // Route to request handler
     if (typeof this._requestHandler === 'undefined') {
       throw new Error('Cannot call request() without request handler');
     }
 
-    const response = await this._requestHandler.request(method, path, data);
+    const response = await this._requestHandler.request(method, url, data);
 
     // Process response
     if (!response) {
@@ -86,7 +91,7 @@ export class CoinbaseClient {
         console.error(result.errors);
       }
 
-      throw new Error(`${method} ${this.baseUrl}${path} responded with status ${response.status}`);
+      throw new Error(`${method} ${BASE_URL}${path} responded with status ${response.status}`);
     }
 
     // Help devs notice warnings

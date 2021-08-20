@@ -12,7 +12,6 @@ import { Method } from 'axios';
 // sample data
 const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
 const testInvalidCredentials = {};
-const testBaseUrl = 'https://example.com';
 const testScopes = ['test:scope'];
 const testPath = '/';
 
@@ -42,7 +41,7 @@ describe('Coinbase', () => {
     let coinbase: CoinbaseClient;
 
     beforeEach(() => {
-      coinbase = new CoinbaseClient(testBaseUrl, testScopes);
+      coinbase = new CoinbaseClient(testScopes);
     });
 
     describe('hasCorrectScopes', () => {

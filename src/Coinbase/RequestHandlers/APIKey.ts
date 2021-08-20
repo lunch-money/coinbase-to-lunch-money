@@ -1,13 +1,13 @@
 import axios, { Method } from 'axios';
 import crypto from 'crypto';
 import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from '../../types.js';
-import { URLSearchParams } from 'url';
+import { URL, URLSearchParams } from 'url';
 
 /**
  * API key request handler for Coinbase Client
  */
 export class APIKeyRequestHandler implements CoinbaseRequestHandler {
-  constructor(public baseUrl: string, private apiKey: string, private apiSecret: string) {}
+  constructor(private apiKey: string, private apiSecret: string) {}
 
   /**
    * Convert key/value objects to query string
@@ -33,12 +33,14 @@ export class APIKeyRequestHandler implements CoinbaseRequestHandler {
    * Concat request options as a "message"
    * @see https://developers.coinbase.com/docs/wallet/api-key-authentication
    */
-  static getMessage(timestamp: number, method: string, path: string, data: CoinbaseData = ''): string {
+  static getMessage(timestamp: number, method: string, url: string, data: CoinbaseData = ''): string {
+    const { pathname, search } = new URL(url);
+
     if (typeof data !== 'string') {
       throw new TypeError('data must be a string');
     }
 
-    return `${timestamp}${method}${path}${data}`;
+    return `${timestamp}${method}${pathname}${search}${data}`;
   }
 
   /**
@@ -51,13 +53,11 @@ export class APIKeyRequestHandler implements CoinbaseRequestHandler {
   /**
    * Handle a request
    */
-  async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseRequestHandlerResponse> {
-    const { baseUrl, apiKey, apiSecret } = this;
-
-    const url = baseUrl + path;
+  async request(method: Method, url: string, data: CoinbaseData = ''): Promise<CoinbaseRequestHandlerResponse> {
+    const { apiKey, apiSecret } = this;
 
     const timestamp = APIKeyRequestHandler.getTimestamp();
-    const message = APIKeyRequestHandler.getMessage(timestamp, method, path, data);
+    const message = APIKeyRequestHandler.getMessage(timestamp, method, url, data);
     const signature = APIKeyRequestHandler.getSignature(message, apiSecret);
 
     const requestConfig = {

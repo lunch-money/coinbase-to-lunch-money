@@ -5,7 +5,7 @@ import { LunchMoneyCryptoConnection } from './shared-types.js';
 export * from './types.js';
 
 // Create default coinbase client
-const defaultCoinbaseClient = new CoinbaseClient('https://api.coinbase.com', ['wallet:accounts:read']);
+const defaultCoinbaseClient = new CoinbaseClient(['wallet:accounts:read']);
 
 /**
  * Lunch Money Coinbase Connection
