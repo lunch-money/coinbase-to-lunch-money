@@ -105,14 +105,12 @@ export class CoinbaseClient {
 
     // Loop through paginaton to fetch all results
     // @see https://developers.coinbase.com/api/v2#pagination
-    if (typeof result.pagination === 'object') {
-      if (typeof result.pagination.next_uri === 'string') {
-        // If there is another page of resources after this one, request it and
-        // append to our results. This will act recursively until all pages have
-        // been returned.
-        const nextResult = await this.request(method, result.pagination.next_uri, data);
-        result.data = result.data.concat(nextResult.data || []);
-      }
+    if (typeof result.pagination === 'object' && typeof result.pagination.next_uri === 'string') {
+      // If there is another page of resources after this one, request it and
+      // append to our results. This will act recursively until all pages have
+      // been returned.
+      const nextResult = await this.request(method, result.pagination.next_uri, data);
+      result.data = result.data.concat(nextResult.data || []);
     }
 
     return result;
@@ -128,8 +126,6 @@ export class CoinbaseClient {
    */
   async hasRequiredPermissions(): Promise<boolean> {
     const userAuthResult = await this.request('GET', '/v2/user/auth');
-
-    console.log('GOT DATA', userAuthResult);
 
     if (!userAuthResult.data) {
       throw new Error('Could not fetch scopes data');
