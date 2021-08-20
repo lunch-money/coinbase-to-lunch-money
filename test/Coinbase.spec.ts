@@ -13,9 +13,15 @@ import { Method } from 'axios';
 const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
 const testInvalidCredentials = {};
 const testScopes = ['test:scope'];
+const testMethod = 'GET';
 const testPath = '/';
+const testUrl = coinbaseAPIBaseUrl + testPath;
 const testDataString = 'test=data';
 const testDataObject = { test: 'data' };
+const testTimestamp = 1000;
+const testMessage = `${testTimestamp}${testMethod}${testPath}${testDataString}`;
+const testApiKey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const testSignature = 'dede090b3dbd6217a276781438adb8af536ed6a418bc4cd5959991c48d062686';
 
 class TestRequestHandler implements CoinbaseRequestHandler {
   async request(method: Method, path: string, data?: CoinbaseData): Promise<CoinbaseRequestHandlerResponse> {
@@ -86,7 +92,7 @@ describe('Coinbase', () => {
     });
 
     describe('request', () => {
-      const request = () => coinbase.request('GET', testPath, testDataString);
+      const request = () => coinbase.request(testMethod, testPath, testDataString);
       const requestIgnoringErrors = ignoreErrors(request);
 
       it('should throw if no request handler set', async () => {
@@ -112,7 +118,7 @@ describe('Coinbase', () => {
           args: [method, path, data],
         } = testRequestHandler.request.getCall(0);
 
-        assert(method === 'GET', `Routed with incorrect method ${method}`);
+        assert(method === testMethod, `Routed with incorrect method ${method}`);
         assert(path === coinbaseAPIBaseUrl + testPath, `Routed with incorrect path ${path}`);
         assert(data === testDataString, `Routed with incorrect data ${data}`);
       });
@@ -287,6 +293,51 @@ describe('Coinbase', () => {
             amount: '2.00',
           },
         ]);
+      });
+    });
+  });
+
+  describe('APIKeyRequestHandler', () => {
+    describe('serializeData', () => {
+      it('should return string when given string', () => {
+        const returnValue = APIKeyRequestHandler.serializeData(testDataString);
+        const expectedString = testDataString;
+
+        assert.equal(returnValue, expectedString);
+      });
+
+      it('should return string when given object', () => {
+        const returnValue = APIKeyRequestHandler.serializeData(testDataObject);
+        const expectedString = 'test=data';
+
+        assert.equal(returnValue, expectedString);
+      });
+    });
+
+    describe('getTimestamp', () => {
+      it('should return current timestamp in seconds', () => {
+        const returnValue = APIKeyRequestHandler.getTimestamp();
+        const expectedTimestamp = Math.floor(Date.now() / 1000);
+
+        assert.equal(returnValue, expectedTimestamp);
+      });
+    });
+
+    describe('getMessage', () => {
+      it('should return concated message', () => {
+        const returnValue = APIKeyRequestHandler.getMessage(testTimestamp, testMethod, testUrl, testDataString);
+        const expectedMessage = `${testTimestamp}${testMethod}${testPath}${testDataString}`;
+
+        assert.equal(returnValue, expectedMessage);
+      });
+    });
+
+    describe('getSignature', () => {
+      it('should return signed message', () => {
+        const returnValue = APIKeyRequestHandler.getSignature(testMessage, testApiKey);
+        const expectedSignature = testSignature;
+
+        assert.equal(returnValue, expectedSignature);
       });
     });
   });
