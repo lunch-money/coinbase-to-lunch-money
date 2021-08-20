@@ -181,5 +181,33 @@ describe('Coinbase', () => {
         }
       });
     });
+
+    describe('hasRequiredPermissions', () => {
+      const hasRequiredPermissions = () => coinbase.hasRequiredPermissions();
+
+      let testRequestHandler: SinonStubbedInstance<TestRequestHandler>;
+      beforeEach(() => {
+        testRequestHandler = sinon.stub(new TestRequestHandler());
+        coinbase._requestHandler = testRequestHandler;
+      });
+
+      it('should throw if result.data is undefined', async () => {
+        testRequestHandler.request.resolves({
+          status: 200,
+          data: {},
+        } as CoinbaseRequestHandlerResponse);
+        assertThrowsAsync(hasRequiredPermissions);
+      });
+
+      it('should return true if scopes match', async () => {
+        testRequestHandler.request.resolves({
+          status: 200,
+          data: { data: { scopes: coinbase.requiredScopes } },
+        } as CoinbaseRequestHandlerResponse);
+
+        const returnValue = await hasRequiredPermissions();
+        assert.isTrue(returnValue);
+      });
+    });
   });
 });
