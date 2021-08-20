@@ -2,7 +2,7 @@ import { AxiosError, AxiosResponse, Method } from 'axios';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export interface CoinbaseCredentials {
+export interface CoinbaseConfig {
   apiKey?: string;
   apiSecret?: string;
 }

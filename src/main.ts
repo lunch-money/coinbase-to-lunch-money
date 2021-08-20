@@ -1,5 +1,5 @@
 import { CoinbaseClient } from './Coinbase/Client.js';
-import { CoinbaseCredentials } from './types.js';
+import { CoinbaseConfig } from './types.js';
 import { LunchMoneyCryptoConnection } from './shared-types.js';
 
 export * from './types.js';
@@ -10,7 +10,7 @@ const defaultCoinbaseClient = new CoinbaseClient(['wallet:accounts:read']);
 /**
  * Lunch Money Coinbase Connection
  */
-export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<CoinbaseCredentials, CoinbaseClient> = {
+export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<CoinbaseConfig, CoinbaseClient> = {
   /**
    * Initiate a connection to a user's coinbase account.
    *
