@@ -158,3 +158,5 @@ export class CoinbaseClient {
     return balances;
   }
 }
+
+export { BASE_URL as coinbaseAPIBaseUrl };

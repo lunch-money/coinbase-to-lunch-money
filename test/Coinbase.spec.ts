@@ -4,7 +4,7 @@ import { APIKeyRequestHandler } from '../src/Coinbase/RequestHandlers/APIKey.js'
 import { assert } from 'chai';
 import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync.js';
 import { assertThrowsAsync } from './helpers/assertThrowsAsync.js';
-import { CoinbaseClient } from '../src/Coinbase/Client.js';
+import { coinbaseAPIBaseUrl, CoinbaseClient } from '../src/Coinbase/Client.js';
 import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from './types.js';
 import { ignoreErrors } from './helpers/ignoreErrors.js';
 import { Method } from 'axios';
@@ -14,12 +14,15 @@ const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-sec
 const testInvalidCredentials = {};
 const testScopes = ['test:scope'];
 const testPath = '/';
+const testDataString = 'test=data';
+const testDataObject = { test: 'data' };
 
 class TestRequestHandler implements CoinbaseRequestHandler {
   async request(method: Method, path: string, data?: CoinbaseData): Promise<CoinbaseRequestHandlerResponse> {
     method;
     path;
     data;
+    console.log('request', method, path, data);
     return {} as CoinbaseRequestHandlerResponse;
   }
 }
@@ -83,7 +86,7 @@ describe('Coinbase', () => {
     });
 
     describe('request', () => {
-      const request = () => coinbase.request('GET', testPath, '');
+      const request = () => coinbase.request('GET', testPath, testDataString);
       const requestIgnoringErrors = ignoreErrors(request);
 
       it('should throw if no request handler set', async () => {
@@ -96,10 +99,22 @@ describe('Coinbase', () => {
         coinbase._requestHandler = testRequestHandler;
       });
 
+      afterEach(() => {
+        testRequestHandler.request.restore();
+      });
+
       it('should route requests to request handler', async () => {
         await requestIgnoringErrors();
 
-        assert(testRequestHandler.request.calledOnceWithExactly('GET', testPath, ''));
+        assert(testRequestHandler.request.calledOnce, 'Not routed to handler');
+
+        const {
+          args: [method, path, data],
+        } = testRequestHandler.request.getCall(0);
+
+        assert(method === 'GET', `Routed with incorrect method ${method}`);
+        assert(path === coinbaseAPIBaseUrl + testPath, `Routed with incorrect path ${path}`);
+        assert(data === testDataString, `Routed with incorrect data ${data}`);
       });
 
       it('should throw if response undefined', async () => {
@@ -188,6 +203,10 @@ describe('Coinbase', () => {
       beforeEach(() => {
         testRequestHandler = sinon.stub(new TestRequestHandler());
         coinbase._requestHandler = testRequestHandler;
+      });
+
+      afterEach(() => {
+        testRequestHandler.request.restore();
       });
 
       it('should throw if result.data is undefined', async () => {
