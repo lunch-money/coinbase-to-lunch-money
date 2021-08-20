@@ -13,15 +13,16 @@ import { Method } from 'axios';
 const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
 const testInvalidCredentials = {};
 const testScopes = ['test:scope'];
-const testMethod = 'GET';
+const testMethod = 'get';
 const testPath = '/';
 const testUrl = coinbaseAPIBaseUrl + testPath;
 const testDataString = 'test=data';
 const testDataObject = { test: 'data' };
 const testTimestamp = 1000;
-const testMessage = `${testTimestamp}${testMethod}${testPath}${testDataString}`;
-const testApiKey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-const testSignature = 'dede090b3dbd6217a276781438adb8af536ed6a418bc4cd5959991c48d062686';
+const testApiKey = 'xxxxxxxxxxxxxxxx';
+const testApiSecret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+// const testMessage = `${testTimestamp}${testMethod}${testPath}${testDataString}`;
+// const testSignature = 'dede090b3dbd6217a276781438adb8af536ed6a418bc4cd5959991c48d062686';
 
 class TestRequestHandler implements CoinbaseRequestHandler {
   async request(method: Method, path: string, data?: CoinbaseData): Promise<CoinbaseRequestHandlerResponse> {
@@ -332,12 +333,52 @@ describe('Coinbase', () => {
       });
     });
 
-    describe('getSignature', () => {
-      it('should return signed message', () => {
-        const returnValue = APIKeyRequestHandler.getSignature(testMessage, testApiKey);
-        const expectedSignature = testSignature;
+    // describe('getSignature', () => {
+    //   it('should return signed message', () => {
+    //     const returnValue = APIKeyRequestHandler.getSignature(testMessage, testApiSecret);
+    //     const expectedSignature = testSignature;
 
-        assert.equal(returnValue, expectedSignature);
+    //     assert.equal(returnValue, expectedSignature);
+    //   });
+    // });
+
+    describe('request', () => {
+      let apiKeyRequestHandler: APIKeyRequestHandler;
+
+      beforeEach(() => {
+        apiKeyRequestHandler = new APIKeyRequestHandler(testApiKey, testApiSecret);
+      });
+
+      it('should make authenticated request to api', async () => {
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: {},
+            });
+          });
+        });
+
+        const response = await apiKeyRequestHandler.request(testMethod, testUrl, testDataString);
+
+        assert.isDefined(response);
+
+        if (typeof response !== 'undefined') {
+          console.log(response.config);
+          assert.equal(response.config.url, testUrl);
+          assert.equal(response.config.method, testMethod);
+          assert.equal(response.config.data, testDataString);
+
+          assert.isDefined(response.config.headers);
+
+          if (typeof response.config.headers !== 'undefined') {
+            assert.isDefined(response.config.headers['CB-ACCESS-SIGN']);
+            assert.isDefined(response.config.headers['CB-ACCESS-TIMESTAMP']);
+            assert.equal(response.config.headers['CB-ACCESS-KEY'], testApiKey);
+            assert.isDefined(response.config.headers['CB-VERSION']);
+          }
+        }
       });
     });
   });
