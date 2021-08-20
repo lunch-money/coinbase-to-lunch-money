@@ -129,6 +129,8 @@ export class CoinbaseClient {
   async hasRequiredPermissions(): Promise<boolean> {
     const userAuthResult = await this.request('GET', '/v2/user/auth');
 
+    console.log('GOT DATA', userAuthResult);
+
     if (!userAuthResult.data) {
       throw new Error('Could not fetch scopes data');
     }

@@ -1,3 +1,4 @@
+import moxios from 'moxios';
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync.js';
@@ -28,6 +29,15 @@ beforeEach(() => {
 
 afterEach(() => {
   sinon.restore();
+});
+
+// ensure requests are spoofed during tests
+beforeEach(() => {
+  moxios.install();
+});
+
+afterEach(() => {
+  moxios.uninstall();
 });
 
 /**

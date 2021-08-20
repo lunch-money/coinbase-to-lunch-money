@@ -238,6 +238,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/moxios@npm:^0":
+  version: 0.4.12
+  resolution: "@types/moxios@npm:0.4.12"
+  dependencies:
+    axios: ^0.21.1
+  checksum: eb66512eb34084485aad23e0bfdfa37bbf6d100ef8f16612f1ef5e74491b7f5e5e7fb1da90d2d58e2980a377c19da25ac3ab8a77bfb6eecc3b8c1072d305f7aa
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*, @types/node@npm:^16.6.1":
   version: 16.6.1
   resolution: "@types/node@npm:16.6.1"
@@ -804,6 +813,7 @@ __metadata:
   dependencies:
     "@types/chai": ^4
     "@types/mocha": ^9.0.0
+    "@types/moxios": ^0
     "@types/node": ^16.6.1
     "@types/rimraf": ^3
     "@types/sinon": ^10.0.2
@@ -817,6 +827,7 @@ __metadata:
     husky: ^7.0.0
     lint-staged: ^11.1.2
     mocha: ^9.0.3
+    moxios: ^0.4.0
     prettier: ^2.3.2
     rimraf: ^3.0.2
     sinon: ^11.1.2
@@ -2200,6 +2211,15 @@ fsevents@~2.3.2:
     _mocha: bin/_mocha
     mocha: bin/mocha
   checksum: 60e5769550140b71fb36bda5728db3131cfbfee9f0bb6226110e813119fbeed63e2c8b1bdbba1b947b4742e1247f4098fd7d6ce37a32f156a30d7d4944f4ac0c
+  languageName: node
+  linkType: hard
+
+"moxios@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "moxios@npm:0.4.0"
+  peerDependencies:
+    axios: ">= 0.13.0"
+  checksum: 51a221b8b2197f8553911e279464a05d1dd80407b40a552e0aa5fb1de490b46088b18d2699d2f849ace356d0dd9adaddb9df4abeeadb1fe490695360d128d28b
   languageName: node
   linkType: hard
 
