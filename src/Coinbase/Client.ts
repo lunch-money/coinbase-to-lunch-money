@@ -2,7 +2,6 @@ import { APIKeyRequestHandler } from './RequestHandlers/APIKey.js';
 import { CoinbaseCredentials, CoinbaseData, CoinbaseRequestHandler, CoinbaseResult } from '../types.js';
 import { CryptoBalance } from '../shared-types.js';
 import { Method } from 'axios';
-import { OAuth2RequestHandler } from './RequestHandlers/OAuth2.js';
 
 /**
  * Coinbase Client

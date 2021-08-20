@@ -2,7 +2,7 @@ import moxios from 'moxios';
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync.js';
-import { assertThrowAsync } from './helpers/assertThrowAsync.js';
+import { assertThrowsAsync } from './helpers/assertThrowsAsync.js';
 import { CoinbaseClient } from '../src/Coinbase/Client.js';
 import { ignoreErrors } from './helpers/ignoreErrors.js';
 import { LunchMoneyCoinbaseConnection } from '../src/main.js';
@@ -75,7 +75,7 @@ describe('main', () => {
     it('should throw if client.hasRequiredPermissions() resolves false', async () => {
       testClientStub.hasRequiredPermissions.resolves(false);
 
-      await assertThrowAsync(initiate);
+      await assertThrowsAsync(initiate);
     });
 
     it('should not call connection.getBalances() if client.hasRequiredPermissions() resolves false', async () => {
