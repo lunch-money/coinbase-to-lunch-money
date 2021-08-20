@@ -37,7 +37,7 @@ export class CoinbaseClient {
       throw new Error(`Insufficient permissions: add ${missingScopes}`);
     }
 
-    if (options.failIfNotExact && requiredScopes.length > grantedScopes.length) {
+    if (options.failIfNotExact && extraScopes.length) {
       throw new Error(`Superfluous permissions: remove ${extraScopes}`);
     }
 
