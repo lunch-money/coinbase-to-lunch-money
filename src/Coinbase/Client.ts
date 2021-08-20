@@ -1,5 +1,5 @@
 import { APIKeyRequestHandler } from './RequestHandlers/APIKey.js';
-import { CoinbaseCredentials, CoinbaseData, CoinbaseRequestHandler, CoinbaseResult } from '../types.js';
+import { CoinbaseConfig, CoinbaseData, CoinbaseRequestHandler, CoinbaseResult } from '../types.js';
 import { CryptoBalance } from '../shared-types.js';
 import { Method } from 'axios';
 import { URL } from 'url';
@@ -49,7 +49,7 @@ export class CoinbaseClient {
   /**
    * Set client credentials
    */
-  setConfig(credentials: CoinbaseCredentials): void {
+  setConfig(credentials: CoinbaseConfig): void {
     // Use api key handler if given api keys
     if (credentials.apiKey && credentials.apiSecret) {
       const { apiKey, apiSecret } = credentials;
