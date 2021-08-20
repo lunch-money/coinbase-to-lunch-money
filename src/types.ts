@@ -5,8 +5,6 @@ import { AxiosError, AxiosResponse, Method } from 'axios';
 export interface CoinbaseCredentials {
   apiKey?: string;
   apiSecret?: string;
-  accessToken?: string;
-  refreshToken?: string;
 }
 
 export type CoinbaseData = Record<string, string> | string;
