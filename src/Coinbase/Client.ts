@@ -91,7 +91,7 @@ export class CoinbaseClient {
         console.error(result.errors);
       }
 
-      throw new Error(`${method} ${BASE_URL}${path} responded with status ${response.status}`);
+      throw new Error(`${method} ${url} responded with status ${response.status}`);
     }
 
     // Help devs notice warnings
