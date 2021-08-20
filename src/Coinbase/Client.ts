@@ -47,7 +47,7 @@ export class CoinbaseClient {
   /**
    * Set client credentials
    */
-  setCredentials(credentials: CoinbaseCredentials): void {
+  setConfig(credentials: CoinbaseCredentials): void {
     // Use api key handler if given api keys
     if (credentials.apiKey && credentials.apiSecret) {
       const { apiKey, apiSecret } = credentials;

@@ -17,14 +17,14 @@ export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<CoinbaseCr
    * - Check that we have correct permissions
    * - Return all balances
    */
-  async initiate(credentials, coinbase = defaultCoinbaseClient) {
-    coinbase.setCredentials(credentials);
+  async initiate(config, coinbase = defaultCoinbaseClient) {
+    coinbase.setConfig(config);
 
     if (!(await coinbase.hasRequiredPermissions())) {
       throw new Error('Invalid permissions');
     }
 
-    return LunchMoneyCoinbaseConnection.getBalances(credentials, coinbase);
+    return LunchMoneyCoinbaseConnection.getBalances(config, coinbase);
   },
 
   /**
@@ -32,8 +32,8 @@ export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<CoinbaseCr
    *
    * - Return all balances
    */
-  async getBalances(credentials, coinbase = defaultCoinbaseClient) {
-    coinbase.setCredentials(credentials);
+  async getBalances(config, coinbase = defaultCoinbaseClient) {
+    coinbase.setConfig(config);
 
     const balances = await coinbase.getAllBalances();
 

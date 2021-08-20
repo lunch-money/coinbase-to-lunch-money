@@ -1,41 +1,11 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
+import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync.js';
+import { assertThrowAsync } from './helpers/assertThrowAsync.js';
 import { CoinbaseClient } from '../src/Coinbase/Client.js';
+import { ignoreErrors } from './helpers/ignoreErrors.js';
 import { LunchMoneyCoinbaseConnection } from '../src/main.js';
 import { LunchMoneyCryptoConnectionBalances } from './shared-types.js';
-
-// test helper -- fails if an async function throws
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const assertThrowAsync = async (fn: () => Promise<any>) => {
-  try {
-    await fn();
-    assert.fail('No error thrown');
-  } catch (err) {
-    assert.throws(() => {
-      throw err;
-    });
-  }
-};
-
-// test helper -- fails if an async function does not throw
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const assertDoesNotThrowAsync = async (fn: () => Promise<any>) => {
-  try {
-    await fn();
-  } catch (err) {
-    assert.fail(`Unexpected error: ${err}`);
-  }
-};
-
-// test helper -- ignores any errors thrown
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ignoreErrors = (fn: () => Promise<any> | void) => async () => {
-  try {
-    await fn();
-  } catch (err) {
-    // do nothing
-  }
-};
 
 // sample data
 const testCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
@@ -69,10 +39,10 @@ describe('main', () => {
 
     const initiateIgnoringErrors = ignoreErrors(initiate);
 
-    it('should call client.setCredentials() with test credentials', async () => {
+    it('should call client.setConfig() with test credentials', async () => {
       await initiateIgnoringErrors();
 
-      assert(testClientStub.setCredentials.calledOnceWithExactly(testCredentials));
+      assert(testClientStub.setConfig.calledOnceWithExactly(testCredentials));
     });
 
     it('should not throw if client.hasRequiredPermissions() resolves true', async () => {
@@ -113,10 +83,10 @@ describe('main', () => {
   describe('getBalances', () => {
     const getBalances = () => LunchMoneyCoinbaseConnection.getBalances(testCredentials, testClientStub);
 
-    it('should call client.setCredentials() with test credentials', async () => {
+    it('should call client.setConfig() with test credentials', async () => {
       await getBalances();
 
-      assert(testClientStub.setCredentials.calledOnceWithExactly(testCredentials));
+      assert(testClientStub.setConfig.calledOnceWithExactly(testCredentials));
     });
 
     it('should call connection.getAllBalances()', async () => {
