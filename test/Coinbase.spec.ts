@@ -209,5 +209,67 @@ describe('Coinbase', () => {
         assert.isTrue(returnValue);
       });
     });
+
+    describe('getAllBalances', () => {
+      const getAllBalances = () => coinbase.getAllBalances();
+
+      let testRequestHandler: SinonStubbedInstance<TestRequestHandler>;
+      beforeEach(() => {
+        testRequestHandler = sinon.stub(new TestRequestHandler());
+        coinbase._requestHandler = testRequestHandler;
+      });
+
+      it('should throw if result.data is undefined', async () => {
+        testRequestHandler.request.resolves({
+          status: 200,
+          data: {},
+        } as CoinbaseRequestHandlerResponse);
+        assertThrowsAsync(getAllBalances);
+      });
+
+      it('should return all crypto balances', async () => {
+        testRequestHandler.request.resolves({
+          status: 200,
+          data: {
+            data: [
+              {
+                balance: {
+                  currency: 'BTC',
+                  amount: '0.00',
+                },
+              },
+              {
+                balance: {
+                  currency: 'ETH',
+                  amount: '1.00',
+                },
+              },
+              {
+                balance: {
+                  currency: 'ADA',
+                  amount: '2.00',
+                },
+              },
+            ],
+          },
+        } as CoinbaseRequestHandlerResponse);
+
+        const returnValue = await getAllBalances();
+        assert.deepEqual(returnValue, [
+          {
+            asset: 'BTC',
+            amount: '0.00',
+          },
+          {
+            asset: 'ETH',
+            amount: '1.00',
+          },
+          {
+            asset: 'ADA',
+            amount: '2.00',
+          },
+        ]);
+      });
+    });
   });
 });
