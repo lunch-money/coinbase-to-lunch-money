@@ -55,13 +55,6 @@ export class CoinbaseClient {
       return;
     }
 
-    // Use oath2 handler if given oauth2 tokens
-    if (credentials.accessToken && credentials.refreshToken) {
-      const { accessToken, refreshToken } = credentials;
-      this._requestHandler = new OAuth2RequestHandler(this.baseUrl, accessToken, refreshToken);
-      return;
-    }
-
     throw new TypeError(`Invalid credentials`);
   }
 

@@ -9,7 +9,7 @@ import { LunchMoneyCoinbaseConnection } from '../src/main.js';
 import { LunchMoneyCryptoConnectionBalances } from './shared-types.js';
 
 // sample data
-const testCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
+const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
 const testBaseUrl = 'https://example.com';
 const testScopes = ['test:scope'];
 
@@ -45,14 +45,14 @@ afterEach(() => {
  */
 describe('main', () => {
   describe('initiate', () => {
-    const initiate = () => LunchMoneyCoinbaseConnection.initiate(testCredentials, testClientStub);
+    const initiate = () => LunchMoneyCoinbaseConnection.initiate(testApiKeyCredentials, testClientStub);
 
     const initiateIgnoringErrors = ignoreErrors(initiate);
 
     it('should call client.setConfig() with test credentials', async () => {
       await initiateIgnoringErrors();
 
-      assert(testClientStub.setConfig.calledOnceWithExactly(testCredentials));
+      assert(testClientStub.setConfig.calledOnceWithExactly(testApiKeyCredentials));
     });
 
     it('should not throw if client.hasRequiredPermissions() resolves true', async () => {
@@ -91,12 +91,12 @@ describe('main', () => {
   });
 
   describe('getBalances', () => {
-    const getBalances = () => LunchMoneyCoinbaseConnection.getBalances(testCredentials, testClientStub);
+    const getBalances = () => LunchMoneyCoinbaseConnection.getBalances(testApiKeyCredentials, testClientStub);
 
     it('should call client.setConfig() with test credentials', async () => {
       await getBalances();
 
-      assert(testClientStub.setConfig.calledOnceWithExactly(testCredentials));
+      assert(testClientStub.setConfig.calledOnceWithExactly(testApiKeyCredentials));
     });
 
     it('should call connection.getAllBalances()', async () => {
