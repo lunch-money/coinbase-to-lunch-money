@@ -33,7 +33,7 @@
     "build": "npm run clean && tsc --project tsconfig.build.json",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
     "test": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli --recursive --extension ts",
-    "test:live:keys": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli 'test-live/keys.spec.ts' --extension ts",
+    "test:live:keys": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli 'test-live/keys.integration.ts' --extension ts",
     "postinstall": "husky install"
   },
   "devDependencies": {
