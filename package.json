@@ -33,8 +33,7 @@
     "build": "npm run clean && tsc --project tsconfig.build.json",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
     "test": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli --recursive --extension ts",
-    "test:live:keys": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli 'test-live/keys.integration.ts' --extension ts",
-    "postinstall": "husky install"
+    "test:live:keys": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli 'test-live/keys.integration.ts' --extension ts"
   },
   "devDependencies": {
     "@types/chai": "^4",
@@ -49,7 +48,6 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
-    "husky": "^7.0.0",
     "lint-staged": "^11.1.2",
     "mocha": "^9.0.3",
     "moxios": "^0.4.0",
