@@ -21,8 +21,10 @@ jobs:
       - name: Test
         run: yarn test --ci --coverage
 
-      - name: Version
+      - name: Install yarn plugin
         run: yarn plugin import version
+
+      - name: Version
         run: yarn version --new-version "${GITHUB_REF:11}" --no-git-tag-version
 
       - name: Publish
