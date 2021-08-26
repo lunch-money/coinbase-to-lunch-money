@@ -19,8 +19,8 @@ jobs:
           node-version: '14.x'
           registry-url: https://registry.npmjs.org
 
-      # - name: Install dependencies
-      #   run: yarn install --frozen-lockfile
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       # - name: Test
       #   run: yarn test --ci --coverage
@@ -30,7 +30,7 @@ jobs:
         with:
           path: ./.yarnrc.yml
           contents: |
-            echo "npmAuthToken: '${{ secrets.NPM_TOKEN }}'"
+            "\nnpmAuthToken: '${{ secrets.NPM_TOKEN }}'"
           write-mode: append
 
       - name: Read yarnrc
@@ -42,5 +42,5 @@ jobs:
       - name: Echo yarnrc
         run: echo "${{ steps.package.outputs.content }}"
 
-      # - name: Publish
-      #   run: yarn npm publish --access public
+      - name: Publish
+        run: yarn npm publish --access public
