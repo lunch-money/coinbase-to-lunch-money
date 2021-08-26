@@ -1,6 +1,6 @@
 {
   "name": "coinbase-to-lunch-money",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "dist/cjs/main.js",
   "module": "dist/mjs/main.js",
   "exports": {
@@ -12,7 +12,7 @@
   "typesVersions": {
     "*": {
       "main.d.ts": [
-        "dist/main.d.ts"
+        "dist/mjs/main.d.ts"
       ]
     }
   },
