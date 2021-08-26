@@ -21,6 +21,14 @@ jobs:
       - name: Test
         run: yarn test --ci --coverage
 
+      - name: Provide auth
+        uses: DamianReeves/write-file-action
+        with:
+          path: ${{ env.home }}/.yarnrc.yml
+          contents: |
+            echo "\nnpmAuthToken: '${{ secrets.NPM_TOKEN }}'"
+          write-mode: append
+
       - name: Publish
         run: yarn npm publish --access public
         env:
