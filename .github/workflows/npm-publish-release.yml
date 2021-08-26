@@ -33,14 +33,14 @@ jobs:
             echo "npmAuthToken: '${{ secrets.NPM_TOKEN }}'"
           write-mode: append
 
-      steps:
-        - name: Read yarnrc
+      - name: Read yarnrc
           id: package
           uses: juliangruber/read-file-action@v1
           with:
           path: ./.yarnrc.yml
-        - name: Echo yarnrc
-          run: echo "${{ steps.package.outputs.content }}"
+          
+      - name: Echo yarnrc
+        run: echo "${{ steps.package.outputs.content }}"
 
       # - name: Publish
       #   run: yarn npm publish --access public
