@@ -21,13 +21,10 @@ jobs:
       - name: Test
         run: yarn test --ci --coverage
 
-      - name: Make .yarnrc.yml writable
-        run: sudo chmod 666 ${{ env.home }}/.yarnrc.yml
-
       - name: Provide auth
         uses: DamianReeves/write-file-action@v1.0
         with:
-          path: ${{ env.home }}/.yarnrc.yml
+          path: ./.yarnrc.yml
           contents: |
             echo "\nnpmAuthToken: '${{ secrets.NPM_TOKEN }}'"
           write-mode: append
