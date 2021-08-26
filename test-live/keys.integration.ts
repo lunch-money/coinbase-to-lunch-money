@@ -1,6 +1,7 @@
 import axios from 'axios';
 import fs from 'fs';
-import { LunchMoneyCoinbaseConnection } from '../src/main.js';
+import { assertThrowsAsync } from '../test/helpers/assertThrowsAsync';
+import { LunchMoneyCoinbaseConnection } from '../src/main';
 
 // Read keys from file
 const keysFile = `./test-live/.keys`;
@@ -29,12 +30,21 @@ axios.interceptors.response.use((response) => {
 
 // Run live tests
 describe('initiate', () => {
-  const result = LunchMoneyCoinbaseConnection.initiate({
-    apiKey,
-    apiSecret,
-  });
-
   it('should log responses and result without error', async () => {
+    const result = LunchMoneyCoinbaseConnection.initiate({
+      apiKey,
+      apiSecret,
+    });
+
     log('result', await result);
+  }).timeout(5000);
+
+  it('should fail with error', async () => {
+    await assertThrowsAsync(() =>
+      LunchMoneyCoinbaseConnection.initiate({
+        apiKey: 'xxx',
+        apiSecret: 'yyy',
+      }),
+    );
   }).timeout(5000);
 });
