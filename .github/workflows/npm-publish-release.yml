@@ -30,7 +30,7 @@ jobs:
         with:
           path: ./.yarnrc.yml
           contents: |
-            "\nnpmAuthToken: '${{ secrets.NPM_TOKEN }}'"
+            "npmAuthToken: '${{ secrets.NPM_TOKEN }}'"
           write-mode: append
 
       - name: Read yarnrc
