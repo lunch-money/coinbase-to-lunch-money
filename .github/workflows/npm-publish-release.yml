@@ -34,10 +34,10 @@ jobs:
           write-mode: append
 
       - name: Read yarnrc
-          id: package
-          uses: juliangruber/read-file-action@v1
-          with:
-            path: ./.yarnrc.yml
+        id: package
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./.yarnrc.yml
 
       - name: Echo yarnrc
         run: echo "${{ steps.package.outputs.content }}"
