@@ -22,7 +22,7 @@ jobs:
         run: yarn test --ci --coverage
 
       - name: Provide auth
-        uses: DamianReeves/write-file-action@v1
+        uses: DamianReeves/write-file-action@v1.0
         with:
           path: ${{ env.home }}/.yarnrc.yml
           contents: |
