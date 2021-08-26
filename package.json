@@ -1,5 +1,6 @@
 {
   "name": "coinbase-to-lunch-money",
+  "version": "0.0.8",
   "main": "dist/cjs/main.js",
   "module": "dist/mjs/main.js",
   "exports": {
@@ -25,7 +26,6 @@
   },
   "bugs": "https://github.com/lunch-money/coinbase-to-lunch-money/issues",
   "homepage": "https://github.com/lunch-money/coinbase-to-lunch-money#README",
-  "version": "0.0.7",
   "license": "MIT",
   "keywords": [
     "lunch money",
