@@ -1,5 +1,23 @@
 {
   "name": "coinbase-to-lunch-money",
+  "main": "dist/cjs/main.js",
+  "module": "dist/mjs/main.js",
+  "exports": {
+    ".": {
+      "import": "./dist/mjs/main.js",
+      "require": "./dist/cjs/main.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "main.d.ts": [
+        "dist/main.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
   "packageManager": "yarn@3.0.1",
   "author": {
     "name": "Chris Drifte",
@@ -16,21 +34,6 @@
   ],
   "description": "A wrapper around the coinbase API for enabling Lunch Money to gather information about a user's account.",
   "repository": "github:lunch-money/coinbase-to-lunch-money",
-  "typesVersions": {
-    "*": {
-      "main.d.ts": [
-        "dist/main.d.ts"
-      ]
-    }
-  },
-  "main": "dist/cjs/main.js",
-  "module": "dist/mjs/main.js",
-  "exports": {
-    ".": {
-      "import": "./dist/mjs/main.js",
-      "require": "./dist/cjs/main.js"
-    }
-  },
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "npm run clean && tsc -p tsconfig.build-mjs.json && tsc -p tsconfig.build-cjs.json && ./postbuild",
