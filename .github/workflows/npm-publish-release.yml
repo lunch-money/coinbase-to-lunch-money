@@ -33,5 +33,8 @@ jobs:
             npmAuthToken: '${{ secrets.NPM_TOKEN }}'
           write-mode: append
 
+      - name: Build
+        run: yarn build
+
       - name: Publish
         run: yarn npm publish --access public
