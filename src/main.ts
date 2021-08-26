@@ -1,8 +1,8 @@
-import { CoinbaseClient } from './Coinbase/Client.js';
-import { CoinbaseConfig } from './types.js';
-import { LunchMoneyCryptoConnection } from './shared-types.js';
+import { CoinbaseClient } from './Coinbase/Client';
+import { CoinbaseConfig } from './types';
+import { LunchMoneyCryptoConnection } from './shared-types';
 
-export * from './types.js';
+export * from './types';
 
 // Create default coinbase client
 const defaultCoinbaseClient = new CoinbaseClient(['wallet:accounts:read']);

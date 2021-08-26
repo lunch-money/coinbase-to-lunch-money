@@ -1,12 +1,12 @@
 import moxios from 'moxios';
 import sinon from 'sinon';
 import { assert } from 'chai';
-import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync.js';
-import { assertThrowsAsync } from './helpers/assertThrowsAsync.js';
-import { CoinbaseClient } from '../src/Coinbase/Client.js';
-import { ignoreErrors } from './helpers/ignoreErrors.js';
-import { LunchMoneyCoinbaseConnection } from '../src/main.js';
-import { LunchMoneyCryptoConnectionBalances } from './shared-types.js';
+import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync';
+import { assertThrowsAsync } from './helpers/assertThrowsAsync';
+import { CoinbaseClient } from '../src/Coinbase/Client';
+import { ignoreErrors } from './helpers/ignoreErrors';
+import { LunchMoneyCoinbaseConnection } from '../src/main';
+import { LunchMoneyCryptoConnectionBalances } from './shared-types';
 
 // sample data
 const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };

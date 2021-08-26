@@ -1,12 +1,12 @@
 import moxios from 'moxios';
 import sinon, { SinonStubbedInstance } from 'sinon';
-import { APIKeyRequestHandler } from '../src/Coinbase/RequestHandlers/APIKey.js';
+import { APIKeyRequestHandler } from '../src/Coinbase/RequestHandlers/APIKey';
 import { assert } from 'chai';
-import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync.js';
-import { assertThrowsAsync } from './helpers/assertThrowsAsync.js';
-import { coinbaseAPIBaseUrl, CoinbaseClient } from '../src/Coinbase/Client.js';
-import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from './types.js';
-import { ignoreErrors } from './helpers/ignoreErrors.js';
+import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync';
+import { assertThrowsAsync } from './helpers/assertThrowsAsync';
+import { coinbaseAPIBaseUrl, CoinbaseClient } from '../src/Coinbase/Client';
+import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from './types';
+import { ignoreErrors } from './helpers/ignoreErrors';
 import { Method } from 'axios';
 
 // sample data

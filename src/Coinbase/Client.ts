@@ -1,6 +1,6 @@
-import { APIKeyRequestHandler } from './RequestHandlers/APIKey.js';
-import { CoinbaseConfig, CoinbaseData, CoinbaseRequestHandler, CoinbaseResult } from '../types.js';
-import { CryptoBalance } from '../shared-types.js';
+import { APIKeyRequestHandler } from './RequestHandlers/APIKey';
+import { CoinbaseConfig, CoinbaseData, CoinbaseRequestHandler, CoinbaseResult } from '../types';
+import { CryptoBalance } from '../shared-types';
 import { Method } from 'axios';
 import { URL } from 'url';
 
