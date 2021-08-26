@@ -37,8 +37,8 @@ jobs:
           id: package
           uses: juliangruber/read-file-action@v1
           with:
-          path: ./.yarnrc.yml
-          
+            path: ./.yarnrc.yml
+
       - name: Echo yarnrc
         run: echo "${{ steps.package.outputs.content }}"
 
