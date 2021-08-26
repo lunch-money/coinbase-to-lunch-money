@@ -21,6 +21,9 @@ jobs:
       - name: Test
         run: yarn test --ci --coverage
 
+      - name: Make .yarnrc.yml writable
+        run: sudo chmod 666 ${{ env.home }}/.yarnrc.yml
+
       - name: Provide auth
         uses: DamianReeves/write-file-action@v1.0
         with:
@@ -31,5 +34,3 @@ jobs:
 
       - name: Publish
         run: yarn npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
