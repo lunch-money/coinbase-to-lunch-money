@@ -6,8 +6,9 @@ import { AxiosError, AxiosResponse, Method } from 'axios';
  * Config for CoinbaseClient
  */
 export interface CoinbaseConfig {
-  apiKey?: string;
-  apiSecret?: string;
+  apiKey: string;
+  apiSecret: string;
+  scopes?: string[];
 }
 
 export type CoinbaseData = Record<string, string> | string;
@@ -18,7 +19,11 @@ export interface CoinbaseRequestHandler {
 
 export type CoinbaseRequestHandlerResponse = AxiosResponse | AxiosError['response'];
 
-export type CoinbaseResult = {
+export interface CoinbaseAccount {
+  balance: Record<string, string>;
+}
+
+export interface CoinbaseResult {
   pagination?: {
     ending_before: string | null;
     starting_after: string | null;
@@ -30,4 +35,4 @@ export type CoinbaseResult = {
   data?: Record<string, any>;
   errors?: { id: string; message: string }[];
   warnings?: { id: string; message: string; url?: string }[];
-};
+}

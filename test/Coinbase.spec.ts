@@ -1,17 +1,12 @@
 import moxios from 'moxios';
-import sinon, { SinonStubbedInstance } from 'sinon';
-import { APIKeyRequestHandler } from '../src/Coinbase/RequestHandlers/APIKey';
 import { assert } from 'chai';
 import { assertDoesNotThrowAsync } from './helpers/assertDoesNotThrowAsync';
 import { assertThrowsAsync } from './helpers/assertThrowsAsync';
-import { coinbaseAPIBaseUrl, CoinbaseClient } from '../src/Coinbase/Client';
-import { CoinbaseData, CoinbaseRequestHandler, CoinbaseRequestHandlerResponse } from './types';
-import { ignoreErrors } from './helpers/ignoreErrors';
-import { Method } from 'axios';
+import { coinbaseAPIBaseUrl, CoinbaseClient } from '../src/CoinbaseClient';
 
 // sample data
 const testApiKeyCredentials = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
-const testInvalidCredentials = {};
+const testConfig = Object.assign({}, testApiKeyCredentials);
 const testScopes = ['test:scope'];
 const testMethod = 'get';
 const testPath = '/';
@@ -19,20 +14,8 @@ const testUrl = coinbaseAPIBaseUrl + testPath;
 const testDataString = 'test=data';
 const testDataObject = { test: 'data' };
 const testTimestamp = 1000;
-const testApiKey = 'xxxxxxxxxxxxxxxx';
-const testApiSecret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 // const testMessage = `${testTimestamp}${testMethod}${testPath}${testDataString}`;
 // const testSignature = 'dede090b3dbd6217a276781438adb8af536ed6a418bc4cd5959991c48d062686';
-
-class TestRequestHandler implements CoinbaseRequestHandler {
-  async request(method: Method, path: string, data?: CoinbaseData): Promise<CoinbaseRequestHandlerResponse> {
-    method;
-    path;
-    data;
-    console.log('request', method, path, data);
-    return {} as CoinbaseRequestHandlerResponse;
-  }
-}
 
 // ensure requests are spoofed during tests
 beforeEach(() => {
@@ -47,13 +30,7 @@ afterEach(() => {
  * Tests
  */
 describe('Coinbase', () => {
-  describe('Client', () => {
-    let coinbase: CoinbaseClient;
-
-    beforeEach(() => {
-      coinbase = new CoinbaseClient(testScopes);
-    });
-
+  describe('Coinbase static methods', () => {
     describe('hasCorrectScopes', () => {
       it('should return true when both scopes are empty', () => {
         assert.isTrue(CoinbaseClient.hasCorrectScopes([], []));
@@ -72,214 +49,286 @@ describe('Coinbase', () => {
       });
     });
 
-    describe('setConfig', () => {
-      it('should throw if given invalid credentials', () => {
-        assert.throws(() => coinbase.setConfig(testInvalidCredentials));
+    describe('serializeData', () => {
+      it('should return string when given string', () => {
+        const returnValue = CoinbaseClient.serializeData(testDataString);
+        const expectedString = testDataString;
+
+        assert.equal(returnValue, expectedString);
       });
 
-      describe('with API Key credentials', () => {
-        it('should not throw if given api credentials', () => {
-          assert.doesNotThrow(() => coinbase.setConfig(testApiKeyCredentials));
-        });
+      it('should return string when given object', () => {
+        const returnValue = CoinbaseClient.serializeData(testDataObject);
+        const expectedString = 'test=data';
 
-        it('should set _requestHandler to be instance of APIKeyRequestHandler', () => {
-          coinbase.setConfig(testApiKeyCredentials);
+        assert.equal(returnValue, expectedString);
+      });
+    });
 
-          if (!(coinbase._requestHandler instanceof APIKeyRequestHandler)) {
-            assert.fail('Invalid _requestHandler instance');
-          }
-        });
+    describe('getTimestamp', () => {
+      it('should return current timestamp in seconds', () => {
+        const returnValue = CoinbaseClient.getTimestamp();
+        const expectedTimestamp = Math.floor(Date.now() / 1000);
+
+        assert.equal(returnValue, expectedTimestamp);
+      });
+    });
+
+    describe('getMessage', () => {
+      it('should return concated message', () => {
+        const returnValue = CoinbaseClient.getMessage(testTimestamp, testMethod, testUrl, testDataString);
+        const expectedMessage = `${testTimestamp}${testMethod}${testPath}${testDataString}`;
+
+        assert.equal(returnValue, expectedMessage);
+      });
+    });
+
+    // describe('getSignature', () => {
+    //   it('should return signed message', () => {
+    //     const returnValue = CoinbaseClient.getSignature(testMessage, testApiSecret);
+    //     const expectedSignature = testSignature;
+
+    //     assert.equal(returnValue, expectedSignature);
+    //   });
+    // });
+  });
+
+  describe('CoinbaseClient instance', () => {
+    let coinbase: CoinbaseClient;
+
+    beforeEach(() => {
+      coinbase = new CoinbaseClient(testConfig);
+    });
+
+    describe('constructor', () => {
+      it('should set config property on instance', () => {
+        assert.equal(coinbase.config.apiKey, testConfig.apiKey);
+        assert.equal(coinbase.config.apiSecret, testConfig.apiSecret);
       });
     });
 
     describe('request', () => {
       const request = () => coinbase.request(testMethod, testPath, testDataString);
-      const requestIgnoringErrors = ignoreErrors(request);
-
-      it('should throw if no request handler set', async () => {
-        await assertThrowsAsync(request);
-      });
-
-      let testRequestHandler: SinonStubbedInstance<TestRequestHandler>;
-      beforeEach(() => {
-        testRequestHandler = sinon.stub(new TestRequestHandler());
-        coinbase._requestHandler = testRequestHandler;
-      });
-
-      afterEach(() => {
-        testRequestHandler.request.restore();
-      });
-
-      it('should route requests to request handler', async () => {
-        await requestIgnoringErrors();
-
-        assert(testRequestHandler.request.calledOnce, 'Not routed to handler');
-
-        const {
-          args: [method, path, data],
-        } = testRequestHandler.request.getCall(0);
-
-        assert(method === testMethod, `Routed with incorrect method ${method}`);
-        assert(path === coinbaseAPIBaseUrl + testPath, `Routed with incorrect path ${path}`);
-        assert(data === testDataString, `Routed with incorrect data ${data}`);
-      });
 
       it('should throw if response undefined', async () => {
-        testRequestHandler.request.resolves(undefined as CoinbaseRequestHandlerResponse);
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: undefined,
+            });
+          });
+        });
 
         await assertThrowsAsync(request);
       });
 
       it('should throw if response.data undefined', async () => {
-        testRequestHandler.request.resolves({} as CoinbaseRequestHandlerResponse);
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: { data: undefined },
+            });
+          });
+        });
 
         await assertThrowsAsync(request);
       });
 
       it('should throw if response.status is not 200', async () => {
-        testRequestHandler.request.resolves({
-          status: 500,
-          data: {},
-        } as CoinbaseRequestHandlerResponse);
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 500,
+              response: { data: {} },
+            });
+          });
+        });
 
         await assertThrowsAsync(request);
       });
 
       it('should not throw if response.status is 200', async () => {
-        testRequestHandler.request.resolves({
-          status: 200,
-          data: {},
-        } as CoinbaseRequestHandlerResponse);
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: { data: {} },
+            });
+          });
+        });
 
         await assertDoesNotThrowAsync(request);
       });
 
-      it('should recursively request all resources and return concated in order', async () => {
-        // First call returns a paginated resource
-        testRequestHandler.request.onCall(0).resolves({
-          status: 200,
-          data: {
-            pagination: {
-              next_uri: '/2',
-            },
-            data: ['a'],
-          },
-        } as CoinbaseRequestHandlerResponse);
+      //   it('should recursively request all resources and return concated in order', async () => {
+      //     // First call returns a paginated resource
+      //     testRequestHandler.request.onCall(0).resolves({
+      //       status: 200,
+      //       data: {
+      //         pagination: {
+      //           next_uri: '/2',
+      //         },
+      //         data: ['a'],
+      //       },
+      //     } as CoinbaseRequestHandlerResponse);
 
-        // So does the second
-        testRequestHandler.request.onCall(1).resolves({
-          status: 200,
-          data: {
-            pagination: {
-              next_uri: '/2',
-            },
-            data: ['b'],
-          },
-        } as CoinbaseRequestHandlerResponse);
+      //     // So does the second
+      //     testRequestHandler.request.onCall(1).resolves({
+      //       status: 200,
+      //       data: {
+      //         pagination: {
+      //           next_uri: '/2',
+      //         },
+      //         data: ['b'],
+      //       },
+      //     } as CoinbaseRequestHandlerResponse);
 
-        // But not the third
-        testRequestHandler.request.onCall(2).resolves({
-          status: 200,
-          data: {
-            pagination: {
-              next_uri: null,
-            },
-            data: ['c', 'd'],
-          },
-        } as CoinbaseRequestHandlerResponse);
+      //     // But not the third
+      //     testRequestHandler.request.onCall(2).resolves({
+      //       status: 200,
+      //       data: {
+      //         pagination: {
+      //           next_uri: null,
+      //         },
+      //         data: ['c', 'd'],
+      //       },
+      //     } as CoinbaseRequestHandlerResponse);
 
-        const result = await request();
+      //     const result = await request();
 
-        assert(testRequestHandler.request.callCount === 3, 'Incorrect number of requests');
+      //     assert(testRequestHandler.request.callCount === 3, 'Incorrect number of requests');
 
-        assert.isDefined(result.data);
+      //     assert.isDefined(result.data);
 
-        if (typeof result.data !== 'undefined') {
-          assert.equal(result.data[0], 'a');
-          assert.equal(result.data[1], 'b');
-          assert.equal(result.data[2], 'c');
-          assert.equal(result.data[3], 'd');
+      //     if (typeof result.data !== 'undefined') {
+      //       assert.equal(result.data[0], 'a');
+      //       assert.equal(result.data[1], 'b');
+      //       assert.equal(result.data[2], 'c');
+      //       assert.equal(result.data[3], 'd');
+      //     }
+      //   });
+      // });
+
+      it('should make authenticated request to api', async () => {
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: { data: {} },
+            });
+          });
+        });
+
+        await coinbase.request(testMethod, testUrl, testDataString);
+
+        const request = moxios.requests.mostRecent();
+
+        if (typeof request !== 'undefined') {
+          assert.equal(request.config.url, testUrl);
+          assert.equal(request.config.method, testMethod);
+          assert.equal(request.config.data, testDataString);
+
+          assert.isDefined(request.config.headers);
+
+          if (typeof request.config.headers !== 'undefined') {
+            assert.isDefined(request.config.headers['CB-ACCESS-SIGN']);
+            assert.isDefined(request.config.headers['CB-ACCESS-TIMESTAMP']);
+            assert.equal(request.config.headers['CB-ACCESS-KEY'], testApiKeyCredentials.apiKey);
+            assert.isDefined(request.config.headers['CB-VERSION']);
+          }
         }
       });
     });
 
-    describe('hasRequiredPermissions', () => {
-      const hasRequiredPermissions = () => coinbase.hasRequiredPermissions();
+    describe('throwErrorOnBadPermissions', () => {
+      const throwErrorOnBadPermissions = () => coinbase.throwErrorOnBadPermissions();
 
-      let testRequestHandler: SinonStubbedInstance<TestRequestHandler>;
-      beforeEach(() => {
-        testRequestHandler = sinon.stub(new TestRequestHandler());
-        coinbase._requestHandler = testRequestHandler;
+      it('should not throw error if scopes match', async () => {
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: { data: { scopes: ['wallet:accounts:read'] } },
+            });
+          });
+        });
+
+        await assertDoesNotThrowAsync(throwErrorOnBadPermissions);
       });
 
-      afterEach(() => {
-        testRequestHandler.request.restore();
+      it("should throw error if scopes don't match", async () => {
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: { data: { scopes: [] } },
+            });
+          });
+        });
+
+        await assertThrowsAsync(throwErrorOnBadPermissions);
       });
 
-      it('should throw if result.data is undefined', async () => {
-        testRequestHandler.request.resolves({
-          status: 200,
-          data: {},
-        } as CoinbaseRequestHandlerResponse);
-        assertThrowsAsync(hasRequiredPermissions);
-      });
+      it('should throw error if too many scopes', async () => {
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: { data: { scopes: ['wallet:accounts:read', 'wallet:accounts:write'] } },
+            });
+          });
+        });
 
-      it('should return true if scopes match', async () => {
-        testRequestHandler.request.resolves({
-          status: 200,
-          data: { data: { scopes: coinbase.requiredScopes } },
-        } as CoinbaseRequestHandlerResponse);
-
-        const returnValue = await hasRequiredPermissions();
-        assert.isTrue(returnValue);
+        await assertThrowsAsync(throwErrorOnBadPermissions);
       });
     });
 
-    describe('getAllBalances', () => {
-      const getAllBalances = () => coinbase.getAllBalances();
-
-      let testRequestHandler: SinonStubbedInstance<TestRequestHandler>;
-      beforeEach(() => {
-        testRequestHandler = sinon.stub(new TestRequestHandler());
-        coinbase._requestHandler = testRequestHandler;
-      });
-
-      it('should throw if result.data is undefined', async () => {
-        testRequestHandler.request.resolves({
-          status: 200,
-          data: {},
-        } as CoinbaseRequestHandlerResponse);
-        assertThrowsAsync(getAllBalances);
-      });
+    describe('getBalances', () => {
+      const getBalances = () => coinbase.getBalances();
 
       it('should return all crypto balances', async () => {
-        testRequestHandler.request.resolves({
-          status: 200,
-          data: {
-            data: [
-              {
-                balance: {
-                  currency: 'BTC',
-                  amount: '0.00',
-                },
+        moxios.withMock(function () {
+          moxios.wait(function () {
+            const request = moxios.requests.mostRecent();
+            request.respondWith({
+              status: 200,
+              response: {
+                data: [
+                  {
+                    balance: {
+                      currency: 'BTC',
+                      amount: '0.00',
+                    },
+                  },
+                  {
+                    balance: {
+                      currency: 'ETH',
+                      amount: '1.00',
+                    },
+                  },
+                  {
+                    balance: {
+                      currency: 'ADA',
+                      amount: '2.00',
+                    },
+                  },
+                ],
               },
-              {
-                balance: {
-                  currency: 'ETH',
-                  amount: '1.00',
-                },
-              },
-              {
-                balance: {
-                  currency: 'ADA',
-                  amount: '2.00',
-                },
-              },
-            ],
-          },
-        } as CoinbaseRequestHandlerResponse);
+            });
+          });
+        });
 
-        const returnValue = await getAllBalances();
+        const returnValue = await getBalances();
         assert.deepEqual(returnValue, [
           {
             asset: 'BTC',
@@ -294,91 +343,6 @@ describe('Coinbase', () => {
             amount: '2.00',
           },
         ]);
-      });
-    });
-  });
-
-  describe('APIKeyRequestHandler', () => {
-    describe('serializeData', () => {
-      it('should return string when given string', () => {
-        const returnValue = APIKeyRequestHandler.serializeData(testDataString);
-        const expectedString = testDataString;
-
-        assert.equal(returnValue, expectedString);
-      });
-
-      it('should return string when given object', () => {
-        const returnValue = APIKeyRequestHandler.serializeData(testDataObject);
-        const expectedString = 'test=data';
-
-        assert.equal(returnValue, expectedString);
-      });
-    });
-
-    describe('getTimestamp', () => {
-      it('should return current timestamp in seconds', () => {
-        const returnValue = APIKeyRequestHandler.getTimestamp();
-        const expectedTimestamp = Math.floor(Date.now() / 1000);
-
-        assert.equal(returnValue, expectedTimestamp);
-      });
-    });
-
-    describe('getMessage', () => {
-      it('should return concated message', () => {
-        const returnValue = APIKeyRequestHandler.getMessage(testTimestamp, testMethod, testUrl, testDataString);
-        const expectedMessage = `${testTimestamp}${testMethod}${testPath}${testDataString}`;
-
-        assert.equal(returnValue, expectedMessage);
-      });
-    });
-
-    // describe('getSignature', () => {
-    //   it('should return signed message', () => {
-    //     const returnValue = APIKeyRequestHandler.getSignature(testMessage, testApiSecret);
-    //     const expectedSignature = testSignature;
-
-    //     assert.equal(returnValue, expectedSignature);
-    //   });
-    // });
-
-    describe('request', () => {
-      let apiKeyRequestHandler: APIKeyRequestHandler;
-
-      beforeEach(() => {
-        apiKeyRequestHandler = new APIKeyRequestHandler(testApiKey, testApiSecret);
-      });
-
-      it('should make authenticated request to api', async () => {
-        moxios.withMock(function () {
-          moxios.wait(function () {
-            const request = moxios.requests.mostRecent();
-            request.respondWith({
-              status: 200,
-              response: {},
-            });
-          });
-        });
-
-        const response = await apiKeyRequestHandler.request(testMethod, testUrl, testDataString);
-
-        assert.isDefined(response);
-
-        if (typeof response !== 'undefined') {
-          console.log(response.config);
-          assert.equal(response.config.url, testUrl);
-          assert.equal(response.config.method, testMethod);
-          assert.equal(response.config.data, testDataString);
-
-          assert.isDefined(response.config.headers);
-
-          if (typeof response.config.headers !== 'undefined') {
-            assert.isDefined(response.config.headers['CB-ACCESS-SIGN']);
-            assert.isDefined(response.config.headers['CB-ACCESS-TIMESTAMP']);
-            assert.equal(response.config.headers['CB-ACCESS-KEY'], testApiKey);
-            assert.isDefined(response.config.headers['CB-VERSION']);
-          }
-        }
       });
     });
   });

@@ -92,6 +92,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lunch-money/coinbase-to-lunch-money@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@lunch-money/coinbase-to-lunch-money@workspace:."
+  dependencies:
+    "@types/chai": ^4
+    "@types/mocha": ^9.0.0
+    "@types/moxios": ^0
+    "@types/node": ^16.6.1
+    "@types/rimraf": ^3
+    "@types/sinon": ^10.0.2
+    "@typescript-eslint/eslint-plugin": ^4.29.2
+    "@typescript-eslint/parser": ^4.29.2
+    axios: ^0.21.1
+    chai: ^4.3.4
+    eslint: ^7.32.0
+    eslint-config-prettier: ^8.3.0
+    eslint-plugin-prettier: ^3.4.0
+    husky: ^7.0.0
+    lint-staged: ^11.1.2
+    mocha: ^9.0.3
+    moxios: ^0.4.0
+    prettier: ^2.3.2
+    rimraf: ^3.0.2
+    sinon: ^11.1.2
+    ts-node: ^10.2.0
+    typescript: ^4.3.5
+  languageName: unknown
+  linkType: soft
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -806,35 +835,6 @@ __metadata:
   checksum: 17d5666611f9b16d64fdf48176d9b7fb1c7d1c1607a189f7e600040a11a6616982876af148230336adb7d8fe728a559f743a4e29db3747e3b1a32fa7f4529681
   languageName: node
   linkType: hard
-
-"coinbase-to-lunch-money@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "coinbase-to-lunch-money@workspace:."
-  dependencies:
-    "@types/chai": ^4
-    "@types/mocha": ^9.0.0
-    "@types/moxios": ^0
-    "@types/node": ^16.6.1
-    "@types/rimraf": ^3
-    "@types/sinon": ^10.0.2
-    "@typescript-eslint/eslint-plugin": ^4.29.2
-    "@typescript-eslint/parser": ^4.29.2
-    axios: ^0.21.1
-    chai: ^4.3.4
-    eslint: ^7.32.0
-    eslint-config-prettier: ^8.3.0
-    eslint-plugin-prettier: ^3.4.0
-    husky: ^7.0.0
-    lint-staged: ^11.1.2
-    mocha: ^9.0.3
-    moxios: ^0.4.0
-    prettier: ^2.3.2
-    rimraf: ^3.0.2
-    sinon: ^11.1.2
-    ts-node: ^10.2.0
-    typescript: ^4.3.5
-  languageName: unknown
-  linkType: soft
 
 "color-convert@npm:^1.9.0":
   version: 1.9.3

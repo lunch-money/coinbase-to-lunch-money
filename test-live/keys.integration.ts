@@ -21,9 +21,7 @@ const log = (key: string, obj: any) => console.dir({ [key]: obj }, { depth: null
 axios.interceptors.response.use((response) => {
   log('response', {
     status: response.status,
-    headers: response.headers,
-    config: response.config,
-    data: response.data,
+    url: response.config.url,
   });
   return response;
 });
