@@ -1,14 +1,15 @@
-import axios, { Method } from 'axios';
-import crypto from 'crypto';
+import axios, { AxiosRequestConfig, Method } from 'axios';
+import { sign, SignOptions } from 'jsonwebtoken';
 import { CoinbaseAccount, CoinbaseConfig, CoinbaseData, CoinbaseResult } from './types';
 import { CryptoBalance } from './shared-types';
-import { URL, URLSearchParams } from 'url';
+import { URL } from 'url';
 
-const REQUIRED_SCOPES = ['wallet:accounts:read'];
 const BASE_URL = 'https://api.coinbase.com';
 const ENDPOINTS = {
-  userAuth: '/v2/user/auth',
-  accounts: '/v2/accounts?limit=100',
+  accounts: 'api/v3/brokerage/accounts',
+};
+const QUERY_PARAMS = {
+  accounts: { limit: 100 },
 };
 
 /**
@@ -27,89 +28,24 @@ export class CoinbaseClient {
   constructor(public config: CoinbaseConfig) {}
 
   /**
-   * Returns true if scopes match. Otherwise throws errors.
-   */
-  static hasCorrectScopes(
-    requiredScopes: string[],
-    grantedScopes: string[],
-    options = { failIfNotExact: true },
-  ): boolean {
-    const missingScopes = requiredScopes.filter((requiredScope) => !grantedScopes.includes(requiredScope));
-    const extraScopes = grantedScopes.filter((grantedScope) => !requiredScopes.includes(grantedScope));
-
-    if (missingScopes.length) {
-      throw new Error(`Insufficient permissions: add ${missingScopes}`);
-    }
-
-    if (options.failIfNotExact && extraScopes.length) {
-      throw new Error(`Superfluous permissions: remove ${extraScopes}`);
-    }
-
-    return true;
-  }
-
-  /**
-   * Convert key/value objects to query string
-   */
-  static serializeData(data: CoinbaseData): string {
-    // handle objects
-    if (typeof data === 'object') {
-      return new URLSearchParams(data).toString();
-    }
-
-    // handle other types
-    return data.toString();
-  }
-
-  /**
-   * Return current timestamp in seconds
-   */
-  static getTimestamp(): number {
-    return Math.floor(Date.now() / 1000);
-  }
-
-  /**
-   * Concat request options as a "message"
-   * @see https://developers.coinbase.com/docs/wallet/api-key-authentication
-   */
-  static getMessage(timestamp: number, method: string, url: string, data: CoinbaseData = ''): string {
-    const { pathname, search } = new URL(url);
-
-    if (typeof data !== 'string') {
-      throw new TypeError('data must be a string');
-    }
-
-    return `${timestamp}${method}${pathname}${search}${data}`;
-  }
-
-  /**
-   * Sign message with api secret
-   */
-  static getSignature(message: string, apiSecret: string): string {
-    return crypto.createHmac('sha256', apiSecret).update(message).digest('hex');
-  }
-
-  /**
    * Execute a request and handle the response
    */
-  async request(method: Method, path: string, data: CoinbaseData = ''): Promise<CoinbaseResult['data']> {
+  async request(
+    method: Method,
+    path: string,
+    query: Record<string, unknown> = {},
+    data: CoinbaseData = '',
+  ): Promise<CoinbaseResult['accounts']> {
     const url = new URL(path, BASE_URL).href;
+    const sJWT = this.generateSignedJwt(method, url);
 
-    const { apiKey, apiSecret } = this.config;
-
-    const timestamp = CoinbaseClient.getTimestamp();
-    const message = CoinbaseClient.getMessage(timestamp, method, url, data);
-    const signature = CoinbaseClient.getSignature(message, apiSecret);
-
-    const requestConfig = {
+    const requestConfig: AxiosRequestConfig = {
       url,
+      params: query,
       method,
       data,
       headers: {
-        'CB-ACCESS-SIGN': signature,
-        'CB-ACCESS-TIMESTAMP': timestamp,
-        'CB-ACCESS-KEY': apiKey,
-        'CB-VERSION': '2015-07-22',
+        Authorization: `Bearer ${sJWT}`,
       },
     };
 
@@ -139,67 +75,65 @@ export class CoinbaseClient {
 
     const result = response.data as CoinbaseResult;
 
-    if (typeof result.data === 'undefined') {
+    if (typeof result === 'undefined') {
       throw new Error(`Coinbase API responded with no data`);
     }
 
-    // Handle error response from API
-    // @see https://developers.coinbase.com/api/v2#error-response
-    if (response.status !== 200) {
-      if (result.errors) {
-        console.error(result.errors);
+    // Process results based on the type of request
+    if (path == ENDPOINTS.accounts) {
+      // Loop through pagination to fetch all results
+      // @see https://docs.cdp.coinbase.com/advanced-trade/reference/retailbrokerageapi_getaccounts
+      if (typeof result.has_next && result.cursor) {
+        // If there is another page of resources after this one, request it and
+        // append to our results. This will act recursively until all pages have
+        // been returned.
+        const nextResult = await this.request(method, ENDPOINTS.accounts, { ...query, cursor: result.cursor });
+        result.accounts = result.accounts.concat(nextResult || []);
       }
-
-      throw new Error(`${method} ${url} responded with status ${response.status}`);
+      return result.accounts;
+    } else {
+      throw new Error(`Invalid path: ${path}. Path must match one of the defined endpoints.`);
     }
-
-    // Help devs notice warnings
-    // @see https://developers.coinbase.com/api/v2#warnings
-    if (result.warnings) {
-      console.warn(result.warnings);
-    }
-
-    // Loop through paginaton to fetch all results
-    // @see https://developers.coinbase.com/api/v2#pagination
-    if (typeof result.pagination === 'object' && typeof result.pagination.next_uri === 'string') {
-      // If there is another page of resources after this one, request it and
-      // append to our results. This will act recursively until all pages have
-      // been returned.
-      const nextResult = await this.request(method, result.pagination.next_uri, data);
-      result.data = result.data.concat(nextResult || []);
-    }
-
-    return result.data;
   }
 
   /**
-   * Returns true if we can connect to the API and have permission to view
-   * balances.
-   *
-   * Will throw an error otherwise.
-   *
-   * @see https://developers.coinbase.com/api/v2#show-authorization-information
+   * Generate a JWT for the current request
    */
-  async throwErrorOnBadPermissions(): Promise<boolean> {
-    const userAuth = await this.request('GET', ENDPOINTS.userAuth);
+  private generateSignedJwt(method: Method, url: string): string {
+    const key_name = this.config.apiKey;
+    const key_secret = this.config.apiSecret;
+    const strippedUrl = url.replace(/^https?:\/\//, '');
+    const uri = `${method} ${strippedUrl}`;
+    const algorithm = 'ES256';
 
-    if (typeof userAuth === 'undefined') {
-      throw new Error('Could not fetch scopes data');
-    }
+    const payload = {
+      iss: 'cdp',
+      nbf: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 120,
+      sub: key_name,
+      uri,
+    };
 
-    const hasCorrectScopes = CoinbaseClient.hasCorrectScopes(REQUIRED_SCOPES, userAuth.scopes);
+    const options: SignOptions = {
+      algorithm,
+      header: {
+        kid: key_name,
+        alg: algorithm,
+      },
+    };
 
-    return hasCorrectScopes;
+    const token = sign(payload, key_secret, options);
+    return token;
   }
 
   /**
    * Returns current coinbase accounts
-   * Required scopes: `wallet:accounts:read`
    *
-   * @see https://developers.coinbase.com/api/v2#list-accounts
+   * @see https://docs.cdp.coinbase.com/advanced-trade/reference/retailbrokerageapi_getaccounts
    */
   async getAccounts(): Promise<CoinbaseAccount[]> {
-    const accounts = await this.request('GET', ENDPOINTS.accounts);
+    const query = this.config.testPagination ? { ...QUERY_PARAMS.accounts, limit: 1 } : QUERY_PARAMS.accounts;
+    const accounts = await this.request('GET', ENDPOINTS.accounts, query);
 
     if (!accounts) {
       throw new Error('Could not fetch accounts data');
@@ -213,15 +147,16 @@ export class CoinbaseClient {
    */
   async getBalances(): Promise<CryptoBalance[]> {
     const accounts = await this.getAccounts();
-    const balances = accounts.map((account: { balance: Record<string, string> }) => {
-      const balance: CryptoBalance = {
-        asset: account.balance.currency,
-        amount: account.balance.amount,
-      };
-
-      return balance;
-    });
-
+    const balances = accounts
+      .filter((account: { available_balance: { value: string; currency: string } }) => {
+        return parseFloat(account.available_balance.value) > 0;
+      })
+      .map((account: { available_balance: { value: string; currency: string } }) => {
+        return {
+          asset: account.available_balance.currency,
+          amount: account.available_balance.value,
+        } as CryptoBalance;
+      });
     return balances;
   }
 }

@@ -7,7 +7,7 @@
   "eslint.packageManager": "yarn",
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "search.exclude": {
     "**/.yarn": true,
@@ -15,5 +15,5 @@
   },
   "git.ignoreLimitWarning": true,
   "importSorter.importStringConfiguration.quoteMark": "single",
-  "typescript.extension.sortImports.quoteStyle": "single"
+  "typescript.extension.sortImports.quoteStyle": "single",
 }

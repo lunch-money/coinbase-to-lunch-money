@@ -1,12 +1,12 @@
 {
   "name": "@lunch-money/coinbase-to-lunch-money",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "main": "dist/cjs/main.js",
   "module": "dist/mjs/main.js",
   "exports": {
     ".": {
-      "import": "./dist/mjs/main.js",
-      "require": "./dist/cjs/main.js"
+      "require": "./dist/cjs/main.js",
+      "import": "./dist/mjs/main.js"
     }
   },
   "typesVersions": {
@@ -19,7 +19,7 @@
   "files": [
     "dist/**/*"
   ],
-  "packageManager": "yarn@3.0.1",
+  "packageManager": "yarn@4.6.0",
   "author": {
     "name": "Chris Drifte",
     "email": "chrisdrifte@gmail.com"
@@ -35,15 +35,16 @@
   "description": "A wrapper around the coinbase API for enabling Lunch Money to gather information about a user's account.",
   "repository": "github:lunch-money/coinbase-to-lunch-money",
   "scripts": {
-    "clean": "rimraf ./dist",
-    "build": "npm run clean && tsc -p tsconfig.build-mjs.json && tsc -p tsconfig.build-cjs.json && ./postbuild",
+    "clean": "/bin/rm -rf ./dist $$ echo ran rm",
+    "build": "yarn clean && tsc -p tsconfig.build-mjs.json && tsc -p tsconfig.build-cjs.json && ./postbuild",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
-    "test": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli --recursive --extension ts",
-    "test:live:keys": "node --loader ts-node/esm node_modules/mocha/lib/cli/cli 'test-live/keys.integration.ts' --extension ts",
+    "test": "node node_modules/mocha/bin/_mocha -r ts-node/register -r dist/cjs/main.js --recursive --extension ts",
+    "test:live:keys": "mocha --require ts-node/register --require dist/cjs/main.js 'test-live/keys.integration.ts' --extension ts",
     "prepare": "husky install"
   },
   "devDependencies": {
     "@types/chai": "^4",
+    "@types/jsonwebtoken": "^9",
     "@types/mocha": "^9.0.0",
     "@types/moxios": "^0",
     "@types/node": "^16.6.1",
@@ -52,6 +53,7 @@
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",
     "chai": "^4.3.4",
+    "dotenv": "^16.4.7",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -74,6 +76,7 @@
     ]
   },
   "dependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "jsonwebtoken": "^9.0.2"
   }
 }
