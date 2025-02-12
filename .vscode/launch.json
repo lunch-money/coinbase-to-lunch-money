@@ -7,7 +7,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests",
+      "name": "Simulated Response Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
         "-r",
@@ -20,6 +20,24 @@
         "--extension",
         "ts",
         "--exit"
+      ],
+      "sourceMaps": true,
+      "cwd": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Live Key Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "dist/cjs/main.js",
+        "test-live/keys.integration.ts",
+        "--extension",
+        "ts",
       ],
       "sourceMaps": true,
       "cwd": "${workspaceFolder}",

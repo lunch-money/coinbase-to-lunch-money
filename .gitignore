@@ -15,3 +15,6 @@ node_modules
 # mac
 .DS_Store
 .env
+
+# live test secrets
+test-live/cdp_api_key.json

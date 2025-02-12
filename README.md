@@ -11,17 +11,21 @@ yarn build
 ```
 
 ## Testing
-Tests require the following environment variables to be set:
+There are two sets of test for the connector.  The mocha tests in the test directory us simulated response from the Coinbase API and validate that the connector is providing expected responses.  
 
-| Variable                 | Description                                                          |
-| ------------------------ | -------------------------------------------------------------------- |
-| API_KEY                  | The Coinbase API Key name (or public key)                            |
-| API_SECRET               | The Coinbase API Private Key                                         |
-| NUM_ACCOUNTS             | The number of currencies with a non zero balance associated with the keys |
-| BALANCE_ASSET            | The currency code for one of the currencies, ie "ETH"                |
-| BALANCE_AMOUNT           | The balance associated with the specified currency                   |
-
+To run the simulated tests:
 ```
 yarn test
 ```
+
+You can also run live tests using a Coinbase v3 API Key file which you download when creating and API key here: https://www.coinbase.com/settings/api
+
+Download the cdp_api_key.json file to this projects test-live directory and then run the test:
+```
+yarn test:live:keys
+```
+
+You can inspect the output of the test to ensure that the returned values match your account.  
+
+Note, the tests will check your balance twice, once using the "normal" API, and once testing pagination getting one account at a time.  It is normal for the Coinbase API to return multiple accounts with zero balances in addition to accounts with balances
 

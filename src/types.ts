@@ -6,9 +6,10 @@ import { AxiosError, AxiosResponse, Method } from 'axios';
  * Config for CoinbaseClient
  */
 export interface CoinbaseConfig {
-  apiKey: string;
-  apiSecret: string;
+  name: string;
+  privateKey: string;
   testPagination?: boolean;
+  mockApiResponseTest?: boolean;
 }
 
 export type CoinbaseData = Record<string, string> | string;

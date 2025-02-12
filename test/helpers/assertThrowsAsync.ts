@@ -6,6 +6,7 @@ export const assertThrowsAsync = async (fn: () => Promise<any>): Promise<void> =
   try {
     await fn();
   } catch (err) {
+    console.log(`Got expected error result: ${(err as Error).message}`);
     assert.throws(() => {
       throw err;
     });

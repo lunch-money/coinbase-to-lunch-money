@@ -100,8 +100,11 @@ export class CoinbaseClient {
    * Generate a JWT for the current request
    */
   private generateSignedJwt(method: Method, url: string): string {
-    const key_name = this.config.apiKey;
-    const key_secret = this.config.apiSecret;
+    if (this.config.mockApiResponseTest) {
+      return '';
+    }
+    const key_name = this.config.name;
+    const key_secret = this.config.privateKey;
     const strippedUrl = url.replace(/^https?:\/\//, '');
     const uri = `${method} ${strippedUrl}`;
     const algorithm = 'ES256';
@@ -121,9 +124,13 @@ export class CoinbaseClient {
         alg: algorithm,
       },
     };
-
-    const token = sign(payload, key_secret, options);
-    return token;
+    try {
+      const token = sign(payload, key_secret, options);
+      return token;
+    } catch (e) {
+      console.log(`Failed to get signed token with API credentials: ${(e as Error).message}`);
+      throw new Error('Unable to access Coinbase API with supplied credentials!');
+    }
   }
 
   /**
@@ -161,4 +168,4 @@ export class CoinbaseClient {
   }
 }
 
-export { BASE_URL as coinbaseAPIBaseUrl };
+export { BASE_URL as coinbaseAPIBaseUrl, ENDPOINTS as coinbaseEndpoints };
