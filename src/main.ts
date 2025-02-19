@@ -18,9 +18,6 @@ export const LunchMoneyCoinbaseConnection: LunchMoneyCryptoConnection<CoinbaseCo
    * - Return all balances
    */
   async initiate(config, CoinbaseClient = defaultCoinbaseClientConstructor) {
-    const coinbase = new CoinbaseClient(config);
-    await coinbase.throwErrorOnBadPermissions();
-
     return LunchMoneyCoinbaseConnection.getBalances(config, CoinbaseClient);
   },
 
