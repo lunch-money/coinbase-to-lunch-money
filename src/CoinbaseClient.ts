@@ -155,9 +155,12 @@ export class CoinbaseClient {
   async getBalances(): Promise<CryptoBalance[]> {
     const accounts = await this.getAccounts();
     const balances = accounts
-      .filter((account: { available_balance: { value: string; currency: string } }) => {
-        return parseFloat(account.available_balance.value) > 0;
-      })
+      // The original implementation of this connector filtered out zero balances
+      // but we WANT these otherwise Lunch Money will inaccurately reflect the last
+      // non-zero balance for currencies that were completely sold off
+      // .filter((account: { available_balance: { value: string; currency: string } }) => {
+      //   return parseFloat(account.available_balance.value) > 0;
+      // })
       .map((account: { available_balance: { value: string; currency: string } }) => {
         return {
           asset: account.available_balance.currency,
