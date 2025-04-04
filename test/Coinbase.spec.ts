@@ -132,7 +132,7 @@ describe('Coinbase', () => {
     describe('getBalances', () => {
       const getBalances = () => coinbase.getBalances();
 
-      it('should return all crypto balances', async () => {
+      it('should return all crypto balances - even zeros', async () => {
         moxios.withMock(function () {
           moxios.wait(function () {
             const request = moxios.requests.mostRecent();
@@ -200,8 +200,20 @@ describe('Coinbase', () => {
         const returnValue = await getBalances();
         assert.deepEqual(returnValue, [
           {
+            asset: 'BTC',
+            amount: '0',
+          },
+          {
+            asset: 'XLM',
+            amount: '0',
+          },
+          {
             asset: 'MATIC',
             amount: '25',
+          },
+          {
+            asset: 'ETC',
+            amount: '0',
           },
           {
             asset: 'ETH',
