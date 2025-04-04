@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - jp/return_zero_balances!
+      - jp/return_zero_balances
   release:
     types: [published]
 
