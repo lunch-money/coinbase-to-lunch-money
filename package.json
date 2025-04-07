@@ -19,8 +19,10 @@
   "files": [
     "dist/**/*"
   ],
-  "packageManager": "yarn@4.6.0",
-  "author": "Chris Drifte <chrisdrifte@gmail.com>",
+  "authors": [
+    "Chris Drifte <chrisdrifte@gmail.com>",
+    "JP Shipherd <jp@lunchmoney.app>"
+  ],
   "bugs": {
     "url": "https://github.com/lunch-money/coinbase-to-lunch-money/issues"
   },
