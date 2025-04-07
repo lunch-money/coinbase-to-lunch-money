@@ -1,6 +1,6 @@
 {
   "name": "@lunch-money/coinbase-to-lunch-money",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "main": "dist/cjs/main.js",
   "module": "dist/mjs/main.js",
   "exports": {
@@ -19,12 +19,13 @@
   "files": [
     "dist/**/*"
   ],
-  "packageManager": "yarn@4.6.0",
-  "author": {
-    "name": "Chris Drifte",
-    "email": "chrisdrifte@gmail.com"
+  "authors": [
+    "Chris Drifte <chrisdrifte@gmail.com>",
+    "JP Shipherd <jp@lunchmoney.app>"
+  ],
+  "bugs": {
+    "url": "https://github.com/lunch-money/coinbase-to-lunch-money/issues"
   },
-  "bugs": "https://github.com/lunch-money/coinbase-to-lunch-money/issues",
   "homepage": "https://github.com/lunch-money/coinbase-to-lunch-money#README",
   "license": "MIT",
   "keywords": [
@@ -33,7 +34,10 @@
     "budgeting"
   ],
   "description": "A wrapper around the coinbase API for enabling Lunch Money to gather information about a user's account.",
-  "repository": "github:lunch-money/coinbase-to-lunch-money",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lunch-money/coinbase-to-lunch-money.git"
+  },
   "scripts": {
     "clean": "/bin/rm -rf ./dist $$ echo ran rm",
     "build": "yarn clean && tsc -p tsconfig.build-mjs.json && tsc -p tsconfig.build-cjs.json && ./postbuild",
@@ -78,5 +82,9 @@
   "dependencies": {
     "axios": "^0.21.1",
     "jsonwebtoken": "^9.0.2"
+  },
+  "types": "./dist/cjs/main.d.ts",
+  "directories": {
+    "test": "test"
   }
 }

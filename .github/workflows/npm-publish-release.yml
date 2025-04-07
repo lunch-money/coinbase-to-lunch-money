@@ -1,5 +1,9 @@
 name: Publish
 on:
+  push:
+    branches:
+      - main
+      - jp/return_zero_balances
   release:
     types: [published]
 
@@ -13,11 +17,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: '19.x'
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build
 
       - name: Test
         run: yarn test --ci --coverage
@@ -30,8 +37,6 @@ jobs:
             npmAuthToken: '${{ secrets.NPM_TOKEN }}'
           write-mode: append
 
-      - name: Build
-        run: yarn build
-
       - name: Publish
-        run: yarn npm publish --access public
+        if: github.ref == 'refs/heads/main'
+        run: npm publish --access public
