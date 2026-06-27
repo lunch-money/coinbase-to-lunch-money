@@ -77,15 +77,15 @@ export class CoinbaseClient {
       throw new Error('Invalid response');
     }
 
-    if (typeof response.data === 'undefined') {
-      throw new Error(`Coinbase API responded with no data`);
-    }
-
     if (response.status >= 400) {
       const body = response.data;
       const detail = body?.message || body?.error || `HTTP ${response.status}`;
       console.log(`Coinbase API rejected request (${response.status}): ${detail}`);
       throw new Error(`Coinbase API error (${response.status}): ${detail}`);
+    }
+
+    if (typeof response.data === 'undefined') {
+      throw new Error(`Coinbase API responded with no data`);
     }
 
     const result = response.data as CoinbaseResult;
@@ -146,8 +146,9 @@ export class CoinbaseClient {
       };
       return sign(payload, pem, options);
     } catch (e) {
-      console.log(`Failed to get signed token with API credentials: ${(e as Error).message}`);
-      throw new Error('Unable to access Coinbase API with supplied credentials!');
+      const message = (e as Error).message;
+      console.log(`Failed to get signed token with API credentials: ${message}`);
+      throw new Error(`Unable to access Coinbase API with supplied credentials: ${message}`);
     }
   }
 
@@ -156,8 +157,8 @@ export class CoinbaseClient {
    *
    * Priority:
    *   1. PEM header present → use it directly (ECDSA or Ed25519)
-   *   2. No header → construct Ed25519 PKCS#8 from raw bytes and validate;
-   *      fall back to wrapping as ECDSA if that fails
+   *   2. No header + ≤64 bytes → must be raw Ed25519 material; construct PKCS#8 PEM
+   *   3. No header + >64 bytes → ECDSA P-256 DER content; re-wrap with EC PEM headers
    */
   private prepareKey(rawKey: string): { pem: string; algorithm: 'ES256' | 'EdDSA' } {
     if (rawKey.includes('-----BEGIN EC PRIVATE KEY-----')) {
@@ -173,18 +174,16 @@ export class CoinbaseClient {
     const rawBytes = Buffer.from(rawKey, 'base64');
 
     if (rawBytes.length <= 64) {
-      try {
-        const seed = rawBytes.slice(0, 32);
-        const pkcs8Der = Buffer.concat([PKCS8_ED25519_PREFIX, seed]);
-        const pem = `-----BEGIN PRIVATE KEY-----\n${pkcs8Der.toString('base64')}\n-----END PRIVATE KEY-----\n`;
-        createPrivateKey(pem); // throws if the bytes don't form a valid key
-        return { pem, algorithm: 'EdDSA' };
-      } catch {
-        // fall through to ECDSA
-      }
+      // Keys this small must be raw Ed25519 material (32-byte seed or 64-byte extended key).
+      // ECDSA P-256 DER content is ~120 bytes so it can never appear here.
+      const seed = rawBytes.slice(0, 32);
+      const pkcs8Der = Buffer.concat([PKCS8_ED25519_PREFIX, seed]);
+      const pem = `-----BEGIN PRIVATE KEY-----\n${pkcs8Der.toString('base64')}\n-----END PRIVATE KEY-----\n`;
+      createPrivateKey(pem); // throws a meaningful error if the bytes are not valid Ed25519
+      return { pem, algorithm: 'EdDSA' };
     }
 
-    // ECDSA DER content — re-wrap with EC PEM headers
+    // Bytes longer than 64 are ECDSA P-256 DER content — re-wrap with EC PEM headers
     const pem = `-----BEGIN EC PRIVATE KEY-----\n${rawKey}\n-----END EC PRIVATE KEY-----\n`;
     return { pem, algorithm: 'ES256' };
   }

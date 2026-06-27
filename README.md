@@ -39,6 +39,8 @@ The final test deliberately uses a malformed key to confirm that signing failure
 yarn test:live:validate-formats
 ```
 
+> **Note:** This test makes real network calls to the Coinbase API and requires internet access. It is not included in `yarn test` and should not be run in offline CI.
+
 #### Generating test fixtures
 
 The four key fixture files used by the format validation tests were generated from two source keys using `test-live/create-fixtures.ts`. It takes one ECDSA key (with PEM headers) and one Ed25519 key (raw base64, no headers) and produces all four variants — stripping headers from the ECDSA key and constructing a proper PKCS#8 PEM from the raw Ed25519 bytes. The input files match what Coinbase currently exports when creating an API key with one of the two supported encryption types.
