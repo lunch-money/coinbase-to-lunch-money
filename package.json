@@ -1,6 +1,6 @@
 {
   "name": "@lunch-money/coinbase-to-lunch-money",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "main": "dist/cjs/main.js",
   "module": "dist/mjs/main.js",
   "exports": {
@@ -44,6 +44,7 @@
     "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
     "test": "node node_modules/mocha/bin/_mocha -r ts-node/register -r dist/cjs/main.js --recursive --extension ts",
     "test:live:keys": "mocha --require ts-node/register --require dist/cjs/main.js 'test-live/keys.integration.ts' --extension ts",
+    "test:live:validate-formats": "NODE_NO_WARNINGS=1 mocha --require ts-node/register --require dist/cjs/main.js 'test-live/validate_key_formats.ts' --extension ts",
     "prepare": "husky install"
   },
   "devDependencies": {

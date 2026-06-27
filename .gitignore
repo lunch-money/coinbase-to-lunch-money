@@ -16,5 +16,8 @@ node_modules
 .DS_Store
 .env
 
-# live test secrets
+# live test secrets — not committed to the repo
 test-live/cdp_api_key.json
+test-live/cdp_api_key-jp.json
+test-live/input-ecdsa.json
+test-live/input-ed25519.json

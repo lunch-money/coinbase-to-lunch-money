@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, Method } from 'axios';
 import { sign, SignOptions } from 'jsonwebtoken';
+import { createPrivateKey, sign as cryptoSign } from 'crypto';
 import { CoinbaseAccount, CoinbaseConfig, CoinbaseData, CoinbaseResult } from './types';
 import { CryptoBalance } from './shared-types';
 import { URL } from 'url';
@@ -11,6 +12,13 @@ const ENDPOINTS = {
 const QUERY_PARAMS = {
   accounts: { limit: 100 },
 };
+
+// PKCS#8 DER prefix for Ed25519 (16 fixed bytes preceding the 32-byte seed)
+const PKCS8_ED25519_PREFIX = Buffer.from('302e020100300506032b657004220420', 'hex');
+
+function base64urlEncode(buf: Buffer): string {
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
 
 /**
  * Coinbase Client
@@ -73,6 +81,13 @@ export class CoinbaseClient {
       throw new Error(`Coinbase API responded with no data`);
     }
 
+    if (response.status >= 400) {
+      const body = response.data;
+      const detail = body?.message || body?.error || `HTTP ${response.status}`;
+      console.log(`Coinbase API rejected request (${response.status}): ${detail}`);
+      throw new Error(`Coinbase API error (${response.status}): ${detail}`);
+    }
+
     const result = response.data as CoinbaseResult;
 
     if (typeof result === 'undefined') {
@@ -97,7 +112,11 @@ export class CoinbaseClient {
   }
 
   /**
-   * Generate a JWT for the current request
+   * Generate a JWT for the current request.
+   *
+   * Detects the key type from the PEM header when present. For raw base64 keys
+   * (no header), attempts Ed25519 first (the newer Coinbase default) then falls
+   * back to ECDSA.
    */
   private generateSignedJwt(method: Method, url: string): string {
     if (this.config.mockApiResponseTest) {
@@ -107,7 +126,6 @@ export class CoinbaseClient {
     const key_secret = this.config.privateKey;
     const strippedUrl = url.replace(/^https?:\/\//, '');
     const uri = `${method} ${strippedUrl}`;
-    const algorithm = 'ES256';
 
     const payload = {
       iss: 'cdp',
@@ -117,20 +135,73 @@ export class CoinbaseClient {
       uri,
     };
 
-    const options: SignOptions = {
-      algorithm,
-      header: {
-        kid: key_name,
-        alg: algorithm,
-      },
-    };
     try {
-      const token = sign(payload, key_secret, options);
-      return token;
+      const { pem, algorithm } = this.prepareKey(key_secret);
+      if (algorithm === 'EdDSA') {
+        return this.signJwtEdDSA(payload, pem, key_name);
+      }
+      const options: SignOptions = {
+        algorithm: 'ES256',
+        header: { kid: key_name, alg: 'ES256' },
+      };
+      return sign(payload, pem, options);
     } catch (e) {
       console.log(`Failed to get signed token with API credentials: ${(e as Error).message}`);
       throw new Error('Unable to access Coinbase API with supplied credentials!');
     }
+  }
+
+  /**
+   * Determine key type and return a PEM-formatted key ready for signing.
+   *
+   * Priority:
+   *   1. PEM header present → use it directly (ECDSA or Ed25519)
+   *   2. No header → construct Ed25519 PKCS#8 from raw bytes and validate;
+   *      fall back to wrapping as ECDSA if that fails
+   */
+  private prepareKey(rawKey: string): { pem: string; algorithm: 'ES256' | 'EdDSA' } {
+    if (rawKey.includes('-----BEGIN EC PRIVATE KEY-----')) {
+      return { pem: rawKey, algorithm: 'ES256' };
+    }
+    if (rawKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      return { pem: rawKey, algorithm: 'EdDSA' };
+    }
+
+    // No PEM header — use byte length to distinguish key types:
+    // Ed25519 raw keys are exactly 32 bytes (seed) or 64 bytes (extended seed + public key).
+    // ECDSA P-256 DER content is ~120 bytes, so anything larger must be ECDSA.
+    const rawBytes = Buffer.from(rawKey, 'base64');
+
+    if (rawBytes.length <= 64) {
+      try {
+        const seed = rawBytes.slice(0, 32);
+        const pkcs8Der = Buffer.concat([PKCS8_ED25519_PREFIX, seed]);
+        const pem = `-----BEGIN PRIVATE KEY-----\n${pkcs8Der.toString('base64')}\n-----END PRIVATE KEY-----\n`;
+        createPrivateKey(pem); // throws if the bytes don't form a valid key
+        return { pem, algorithm: 'EdDSA' };
+      } catch {
+        // fall through to ECDSA
+      }
+    }
+
+    // ECDSA DER content — re-wrap with EC PEM headers
+    const pem = `-----BEGIN EC PRIVATE KEY-----\n${rawKey}\n-----END EC PRIVATE KEY-----\n`;
+    return { pem, algorithm: 'ES256' };
+  }
+
+  /**
+   * Sign a JWT using Ed25519 via Node's built-in crypto module.
+   * jsonwebtoken's jws sub-dependency does not support EdDSA, so we sign
+   * the token directly here.
+   */
+  private signJwtEdDSA(payload: object, privateKeyPem: string, keyName: string): string {
+    const header = { alg: 'EdDSA', typ: 'JWT', kid: keyName };
+    const headerB64 = base64urlEncode(Buffer.from(JSON.stringify(header)));
+    const payloadB64 = base64urlEncode(Buffer.from(JSON.stringify(payload)));
+    const signingInput = `${headerB64}.${payloadB64}`;
+    const key = createPrivateKey(privateKeyPem);
+    const signature = cryptoSign(null, Buffer.from(signingInput), key);
+    return `${signingInput}.${base64urlEncode(signature)}`;
   }
 
   /**
