@@ -193,7 +193,7 @@ export class CoinbaseClient {
    * jsonwebtoken's jws sub-dependency does not support EdDSA, so we sign
    * the token directly here.
    */
-  private signJwtEdDSA(payload: object, privateKeyPem: string, keyName: string): string {
+  private signJwtEdDSA(payload: Record<string, unknown>, privateKeyPem: string, keyName: string): string {
     const header = { alg: 'EdDSA', typ: 'JWT', kid: keyName };
     const headerB64 = base64urlEncode(Buffer.from(JSON.stringify(header)));
     const payloadB64 = base64urlEncode(Buffer.from(JSON.stringify(payload)));
